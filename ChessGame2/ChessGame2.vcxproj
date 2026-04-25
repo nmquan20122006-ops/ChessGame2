@@ -131,23 +131,22 @@
     <ClCompile Include="Src\Bot\DumpBot.cpp" />
     <ClCompile Include="Src\Game Core\AllMoveValid.cpp" />
     <ClCompile Include="Src\Game Core\GameControl.cpp" />
-    <ClCompile Include="Src\Game Core\GameState.cpp" />
     <ClCompile Include="Src\Game Core\MoveExecutor.cpp" />
     <ClCompile Include="Src\Game Core\MoveService.cpp" />
     <ClCompile Include="Src\Bot\StockfishEngine.cpp" />
-    <ClCompile Include="Src\Graphic\AnalysisPanel.cpp" />
-    <ClCompile Include="Src\Graphic\Animation.cpp" />
-    <ClCompile Include="Src\Graphic\InformationPanel.cpp" />
-    <ClCompile Include="Src\Graphic\UIManager.cpp" />
+    <ClCompile Include="Src\UI\AnalysisPanel.cpp" />
+    <ClCompile Include="Src\UI\Animation.cpp" />
+    <ClCompile Include="Src\UI\InformationPanel.cpp" />
+    <ClCompile Include="Src\UI\UIManager.cpp" />
     <ClCompile Include="Src\Input\InputController.cpp" />
-    <ClCompile Include="Src\Graphic\PieceRenderer.cpp" />
+    <ClCompile Include="Src\UI\PieceRenderer.cpp" />
     <ClCompile Include="Src\Game Core\Board.cpp" />
     <ClCompile Include="Src\main\main.cpp" />
-    <ClCompile Include="Src\Graphic\BoardRenderer.cpp" />
+    <ClCompile Include="Src\UI\BoardRenderer.cpp" />
     <ClCompile Include="Src\main\GameVideo.cpp" />
     <ClCompile Include="Src\Game Core\MoveValidator.cpp" />
     <ClCompile Include="Src\Game Core\StockfishAI.cpp" />
-    <ClCompile Include="Src\Graphic\TextureManager.cpp" />
+    <ClCompile Include="Src\UI\TextureManager.cpp" />
     <ClCompile Include="Src\Input\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>

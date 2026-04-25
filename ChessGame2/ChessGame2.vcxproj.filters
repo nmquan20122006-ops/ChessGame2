@@ -30,13 +30,13 @@
     <ClCompile Include="Src\main\GameVideo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Graphic\BoardRenderer.cpp">
+    <ClCompile Include="Src\UI\BoardRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Graphic\TextureManager.cpp">
+    <ClCompile Include="Src\UI\TextureManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Graphic\PieceRenderer.cpp">
+    <ClCompile Include="Src\UI\PieceRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Game Core\AllMoveValid.cpp">
@@ -48,7 +48,7 @@
     <ClCompile Include="Src\Audio\GameAudio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Graphic\Animation.cpp">
+    <ClCompile Include="Src\UI\Animation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Game Core\MoveService.cpp">
@@ -69,16 +69,13 @@
     <ClCompile Include="Src\Game Core\StockfishAI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Game Core\GameState.cpp">
+    <ClCompile Include="Src\UI\UIManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Graphic\UIManager.cpp">
+    <ClCompile Include="Src\UI\AnalysisPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Graphic\AnalysisPanel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Graphic\InformationPanel.cpp">
+    <ClCompile Include="Src\UI\InformationPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

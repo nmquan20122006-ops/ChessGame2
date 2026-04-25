@@ -1,5 +1,4 @@
 #pragma once
-
 #include"Piece.h"
 #include"Utility.h"
 #include"../Constants/Constants.h"
