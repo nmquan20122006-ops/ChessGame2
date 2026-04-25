@@ -1,7 +1,6 @@
 ﻿#include"MoveValidator.h"
 #include<cmath>
 
-//PAWN MOVE VALIDATOR---------------------------------------------------------------------
 bool MoveValidator::checkPawn(Position fromPos, Position toPos, const Board& classBoard) {
 
 	Piece pawn = classBoard.getPiece(fromPos);
@@ -47,9 +46,6 @@ bool MoveValidator::checkPawn(Position fromPos, Position toPos, const Board& cla
 	return false;
 }
 
-
-//CHECK PATH IS CLEAR?-------------------------------------------------------------------
-
 bool MoveValidator::isPathClear(Position fromPos, Position toPos, const Board& classBoard) {
 
 	int rowStep = (toPos.row > fromPos.row) ? 1 : (toPos.row < fromPos.row ? -1 : 0);
@@ -72,8 +68,6 @@ bool MoveValidator::isPathClear(Position fromPos, Position toPos, const Board& c
 	return true;
 }
 
-//CHECK ROOK-----------------------------------------------------------------------------
-
 bool MoveValidator::checkRook(Position fromPos, Position toPos, const Board& classBoard) {
 
 	//ROOK STRAIGHTS ONLY
@@ -88,8 +82,6 @@ bool MoveValidator::checkRook(Position fromPos, Position toPos, const Board& cla
 
 	return classBoard.isEmpty(toPos) || isOpponent(rook, targetPiece);
 }
-
-//CHECK BISHOP-----------------------------------------------------------------------------
 
 bool MoveValidator::checkBishop(Position fromPos, Position toPos, const Board& classBoard) {
 
@@ -110,15 +102,11 @@ bool MoveValidator::checkBishop(Position fromPos, Position toPos, const Board& c
 	return classBoard.isEmpty(toPos) || isOpponent(bishop, targetPiece);
 }
 
-//CHECK QUEEN-------------------------------------------------------------------------------
-
 bool MoveValidator::checkQueen(Position fromPos, Position toPos, const Board& classBoard) {
 
 	return checkBishop(fromPos, toPos, classBoard) || checkRook(fromPos, toPos, classBoard);
 
 }
-
-//CHECK KING--------------------------------------------------------------------------------
 
 bool MoveValidator::checkKing(Position fromPos, Position toPos, const Board& classBoard) {
 
@@ -137,8 +125,6 @@ bool MoveValidator::checkKing(Position fromPos, Position toPos, const Board& cla
 	return classBoard.isEmpty(toPos) || isOpponent(king, targetPiece);
 }
 
-//CHECK KNIGHT------------------------------------------------------------------------------
-
 bool MoveValidator::checkKnight(Position fromPos, Position toPos, const Board& classBoard) {
 
 	int rowDiff = std::abs(toPos.row - fromPos.row);
@@ -155,8 +141,6 @@ bool MoveValidator::checkKnight(Position fromPos, Position toPos, const Board& c
 
 	return classBoard.isEmpty(toPos) || isOpponent(knight, targetPiece);
 }
-
-//LIST OF ALL VALID MOVE FOR ALL PIECE--------------------------------------------------------
 
 bool MoveValidator::isValidMove(Position fromPos, Position toPos, const Board& classBoard) {
 
@@ -183,8 +167,6 @@ bool MoveValidator::isValidMove(Position fromPos, Position toPos, const Board& c
 	}
 
 } 
-
-//KING CHECK-------------------------------------------------------------------------------
 
 bool MoveValidator::isInCheck(bool whiteTurn,const Board& classBoard) {
 
@@ -309,8 +291,6 @@ bool MoveValidator::isUnderAttack(Position kingPos, bool isWhiteTarget, const Bo
 
 	return false;
 }
-
-//En Passant----------------------------------------------------------------------------------
 
 bool MoveValidator::isCanEnPassant(Position fromPos, Position toPos, const Board& board) {
 

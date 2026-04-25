@@ -35,12 +35,6 @@ void Board::initBoard() {
 				continue;
 			}
 
-			if (isWhite(p)) {
-				w_PieceList.push_back(pos);
-			}
-			else {
-				b_PieceList.push_back(pos);
-			}
 		}
 	}
 }
@@ -88,9 +82,9 @@ void Board::resetBoard() {
 
 		}
 	}
-	w_PieceList.clear();
-	b_PieceList.clear();
 
+	castleState.reset();
+	lastMove.reset();
 }
 
 void Board::movePiece(Position fromPos, Position toPos) {
@@ -99,13 +93,6 @@ void Board::movePiece(Position fromPos, Position toPos) {
 	Piece targetPiece = getPiece(toPos);
 	bool isWhiteMoving = isWhite(movingPiece);
 
-	if (targetPiece != Piece::Empty) {
-		bool isWhiteTarget = isWhite(targetPiece);
-		removeFromVector(isWhiteTarget ? b_PieceList : w_PieceList, toPos);
-	}
-
-	updatePosInVector(fromPos, toPos, isWhiteMoving);
-
 	updateKingPosition(toPos, movingPiece);
 
 	setPiece(toPos, movingPiece);
@@ -113,6 +100,7 @@ void Board::movePiece(Position fromPos, Position toPos) {
 	deletePiece(fromPos);
 
 	updateLastMove({ fromPos, toPos });
+
 }
 
 void Board::updateLastMove(LastMove move) {
@@ -161,30 +149,9 @@ void Board::updateKingPosition(Position toPos,Piece &p) {
 
 }
 
-void Board::removeFromVector(std::vector<Position>& list, Position Pos) {
+void Board::setLastMove(Position fromPos, Position toPos) {
 
-	for (size_t i = 0; i < list.size(); ++i) {
-
-		if (list[i].row == Pos.row && list[i].col == Pos.col) {
-
-			list[i] = list.back();
-			list.pop_back();
-			return;
-		}
-	}
+	lastMove.from = fromPos;
+	lastMove.to = toPos;
 }
 
-void Board::updatePosInVector(Position oldPos, Position newPos, bool isWhite) {
-
-	auto& list = isWhite ? w_PieceList : b_PieceList;
-	for (auto& pos : list) {
-		if (pos.row == oldPos.row && pos.col == oldPos.col) {
-			pos = newPos;
-			return;
-		}
-	}
-}
-
-const std::vector<Position>& Board::getPositionExist(bool isWhite) const{
-	return isWhite ? w_PieceList : b_PieceList;
-}

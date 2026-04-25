@@ -102,13 +102,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\quan\Desktop\Gamedev\ChessGame2\ChessGame2\Constants;C:\Users\quan\Desktop\Gamedev\ChessGame2\ChessGame2\include_tweeny;C:\Users\quan\Desktop\Gamedev\ChessGame2\ChessGame2\Include;D:\SFML\SFML-2.6.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\quan\Desktop\Gamedev\ChessGame2\ChessGame2\Tweeny;C:\Users\quan\Desktop\Gamedev\ChessGame2\ChessGame2\Include\UI;C:\Users\quan\Desktop\Gamedev\ChessGame2\ChessGame2\Include\Core;D:\TGUI-0.9.5-VisualStudio-64bit-for-SFML-2.6.2 %281%29\TGUI-0.9\include;C:\Users\quan\Desktop\Gamedev\ChessGame2\ChessGame2\Constants;C:\Users\quan\Desktop\Gamedev\ChessGame2\ChessGame2\include_tweeny;C:\Users\quan\Desktop\Gamedev\ChessGame2\ChessGame2\Include;D:\SFML\SFML-2.6.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\SFML\SFML-2.6.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\TGUI-0.9.5-VisualStudio-64bit-for-SFML-2.6.2 %281%29\TGUI-0.9\lib;D:\SFML\SFML-2.6.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;tgui-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -131,52 +131,51 @@
     <ClCompile Include="Src\Bot\DumpBot.cpp" />
     <ClCompile Include="Src\Game Core\AllMoveValid.cpp" />
     <ClCompile Include="Src\Game Core\GameControl.cpp" />
-    <ClCompile Include="Src\Game Core\GameController.cpp" />
+    <ClCompile Include="Src\Game Core\GameState.cpp" />
     <ClCompile Include="Src\Game Core\MoveExecutor.cpp" />
     <ClCompile Include="Src\Game Core\MoveService.cpp" />
-    <ClCompile Include="Src\Game Core\StockfishEngine.cpp" />
-    <ClCompile Include="Src\Game Engine\Animation.cpp" />
-    <ClCompile Include="Src\Game Engine\BorderRenderer.cpp" />
-    <ClCompile Include="Src\Game Engine\HighlightRenderer.cpp" />
-    <ClCompile Include="Src\Game Engine\InputController.cpp" />
-    <ClCompile Include="Src\Game Engine\PieceRenderer.cpp" />
+    <ClCompile Include="Src\Bot\StockfishEngine.cpp" />
+    <ClCompile Include="Src\Graphic\AnalysisPanel.cpp" />
+    <ClCompile Include="Src\Graphic\Animation.cpp" />
+    <ClCompile Include="Src\Graphic\InformationPanel.cpp" />
+    <ClCompile Include="Src\Graphic\UIManager.cpp" />
+    <ClCompile Include="Src\Input\InputController.cpp" />
+    <ClCompile Include="Src\Graphic\PieceRenderer.cpp" />
     <ClCompile Include="Src\Game Core\Board.cpp" />
-    <ClCompile Include="Src\Game Core\main.cpp" />
-    <ClCompile Include="Src\Game Engine\BoardRenderer.cpp" />
-    <ClCompile Include="Src\Game Engine\GameVideo.cpp" />
+    <ClCompile Include="Src\main\main.cpp" />
+    <ClCompile Include="Src\Graphic\BoardRenderer.cpp" />
+    <ClCompile Include="Src\main\GameVideo.cpp" />
     <ClCompile Include="Src\Game Core\MoveValidator.cpp" />
-    <ClCompile Include="Src\Game Engine\StockfishPlay.cpp" />
-    <ClCompile Include="Src\Game Engine\TextureManager.cpp" />
-    <ClCompile Include="Src\Game Engine\Utility.cpp" />
+    <ClCompile Include="Src\Game Core\StockfishAI.cpp" />
+    <ClCompile Include="Src\Graphic\TextureManager.cpp" />
+    <ClCompile Include="Src\Input\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Downloads\tweeny-master\tweeny-master\include_tweeny\tweeny.h" />
     <ClInclude Include="Constants\Constants.h" />
-    <ClInclude Include="Constants\Define.h" />
-    <ClInclude Include="Include\AllMoveValid.h" />
-    <ClInclude Include="Include\Animation.h" />
-    <ClInclude Include="Include\Board.h" />
-    <ClInclude Include="Include\BoardRenderer.h" />
-    <ClInclude Include="Include\BorderRenderer.h" />
-    <ClInclude Include="Include\Bot.h" />
-    <ClInclude Include="Include\ChessUtils.h" />
-    <ClInclude Include="Include\GameAudio.h" />
-    <ClInclude Include="Include\GameControl.h" />
-    <ClInclude Include="Include\GameController.h" />
-    <ClInclude Include="Include\GameRenderer.h" />
-    <ClInclude Include="Include\GameState.h" />
-    <ClInclude Include="Include\GameVideo.h" />
-    <ClInclude Include="Include\HighlightRenderer.h" />
-    <ClInclude Include="Include\InputController.h" />
-    <ClInclude Include="Include\MoveExecutor.h" />
-    <ClInclude Include="Include\MoveService.h" />
-    <ClInclude Include="Include\MoveValidator.h" />
-    <ClInclude Include="Include\Piece.h" />
-    <ClInclude Include="Include\PieceRenderer.h" />
-    <ClInclude Include="Include\StockfishEngine.h" />
-    <ClInclude Include="Include\StockfishPlay.h" />
-    <ClInclude Include="Include\TextureManager.h" />
-    <ClInclude Include="Include\Utility.h" />
+    <ClInclude Include="Include\Core\AllMoveValid.h" />
+    <ClInclude Include="Include\UI\AnalysisPanel.h" />
+    <ClInclude Include="Include\UI\Animation.h" />
+    <ClInclude Include="Include\Core\Board.h" />
+    <ClInclude Include="Include\UI\BoardRenderer.h" />
+    <ClInclude Include="Include\UI\Bot.h" />
+    <ClInclude Include="Include\UI\GameAudio.h" />
+    <ClInclude Include="Include\Core\GameControl.h" />
+    <ClInclude Include="Include\UI\GameRenderer.h" />
+    <ClInclude Include="Include\Core\GameState.h" />
+    <ClInclude Include="Include\UI\GameVideo.h" />
+    <ClInclude Include="Include\UI\InformationPanel.h" />
+    <ClInclude Include="Include\UI\InputController.h" />
+    <ClInclude Include="Include\Core\MoveExecutor.h" />
+    <ClInclude Include="Include\Core\MoveService.h" />
+    <ClInclude Include="Include\Core\MoveValidator.h" />
+    <ClInclude Include="Include\Core\Piece.h" />
+    <ClInclude Include="Include\UI\PieceRenderer.h" />
+    <ClInclude Include="Include\Core\StockfishEngine.h" />
+    <ClInclude Include="Include\Core\StockfishAI.h" />
+    <ClInclude Include="Include\UI\TextureManager.h" />
+    <ClInclude Include="Include\Core\UIManager.h" />
+    <ClInclude Include="Include\Core\Utility.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

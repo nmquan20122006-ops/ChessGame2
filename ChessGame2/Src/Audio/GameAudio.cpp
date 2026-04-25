@@ -41,6 +41,12 @@ void AudioManager::setMusicVolume(float volume) {
     backgroundMusic.setVolume(volume);
 }
 
-void AudioManager::setSoundVolume(float volume) {
-    
+void AudioManager::initSound(){
+
+    loadSound("MoveSound", "Assets/Sound/move.wav");
+    loadSound("UnValidMoveSound", "Assets/Sound/illegalMove.wav");
+    loadSound("CaptureSound", "Assets/Sound/Capture.wav");
+    loadSound("CheckSound", "Assets/Sound/check.wav");
+    loadSound("CheckMateSound", "Assets/Sound/checkmate.wav");
+    loadSound("SelectSound", "Assets/Sound/select.wav");
 }
