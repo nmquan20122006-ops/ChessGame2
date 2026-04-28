@@ -83,7 +83,6 @@ void Board::resetBoard() {
 		}
 	}
 
-	castleState.reset();
 	lastMove.reset();
 }
 
