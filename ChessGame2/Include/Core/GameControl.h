@@ -39,10 +39,11 @@ private:
     void notifyMoveExecuted(const Move& move);
     void notifyStateChanged(const GameStateEnum& newState);
 
-    std::vector<Move>moveHistory;
+    std::vector<Move>undoStack;
     std::vector<Move>redoStack;
 
     bool m_isAnimating = getState().isAnimating;
+    bool m_isUndoing = false;
 
 public:
     GameControl(Board& b, MoveExecutor& m, MoveService& c, GameState& g, StockfishGame& s,DumpBot d);
@@ -67,7 +68,7 @@ public:
     void updateAiMove();
 
     void requestUndo();
-    void requetRedo();
+    void requestRedo();
 
     bool executeUndoMove();
     void executeRedoMove();

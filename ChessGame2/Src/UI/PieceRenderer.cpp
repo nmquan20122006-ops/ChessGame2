@@ -84,7 +84,7 @@ void PieceRenderer::renderAll(sf::RenderWindow& window, const Board& board) {
 
         sf::Sprite& dragSprite = getSpriteForPiece(drag.draggingPiece);
 
-        dragSprite.setScale(baseScale * 1.3f, baseScale * 1.3f);
+        dragSprite.setScale(baseScale * 1.2f, baseScale * 1.2f);
         
         float dragSpriteBoundWidth = dragSprite.getLocalBounds().width / 2;
         float dragSpriteBoundHeight = dragSprite.getLocalBounds().height / 2; 

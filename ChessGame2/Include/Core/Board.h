@@ -4,6 +4,9 @@
 #include"../Constants/Constants.h"
 #include"GameState.h"
 
+class Board_DEBUG;
+class BoardToFEN_DEBUG;
+
 struct LastMove {
 
 	Position from = { -1,-1 };
@@ -40,6 +43,11 @@ struct CastleState {
 		return !blackQueenRookMoved && !blackKingMoved;
 	}
 
+	bool noMoreCastle()const {
+		return !canWhiteCastleKingSide() && !canWhiteCastleQueenSide() &&
+			!canBlackCastleKingSide() && !canBlackCastleQueenSide();
+	}
+
 	void reset() {
 		whiteKingMoved = false;
 		blackKingMoved = false;
@@ -57,6 +65,10 @@ struct CastleState {
 };
 
 class Board {
+
+	friend class Board_DEBUG;
+	friend class BoardToFEN_DEBUG;
+
 private:
 
 	Piece board[8][8] = {};
@@ -64,7 +76,7 @@ private:
 	Position whiteKingPos, blackKingPos;
 
 	CastleState castleState;
-
+	
 public:
 
 	Board();
@@ -85,9 +97,12 @@ public:
 	LastMove getLastMove() const { return lastMove; }
 
 	Position findKing(bool isWhiteKing) const ;
-	void updateKingPosition(Position toPos,Piece& p);
+	void updateKingPosition(Position toPos,const Piece& p);
 
 	void updateCastleState(Piece p,Position pos);
+	void undoCastleState(Piece p, Position pos);
+	void updateCastleStateOnCapture(Piece capturedPiece, Position capturePos);
+	void undoCastleStateOnCapture(Piece capturedPiece, Position capturePos);
 	CastleState getCastleState()const { return castleState; }
 
 	void setLastMove(Position from,Position to);
@@ -96,5 +111,3 @@ public:
 	auto resetC_KingSide() { return castleState.resetKingSide(); }
 
 };
-
-

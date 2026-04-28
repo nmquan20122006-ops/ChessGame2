@@ -92,9 +92,6 @@ void MoveExecutor::applyMove(Move& move) {
     move.movedPiece = board.getPiece(move.fromPos);
     move.capturedPiece = board.getPiece(move.toPos);
 
-    std::cout << "MovedPiece: " << (int)move.movedPiece << std::endl;
-    std::cout << "CapturedPiece: " << (int)move.capturedPiece << std::endl;
-
     Piece piece = move.movedPiece;
 
     
@@ -167,7 +164,8 @@ void MoveExecutor::undoMove(const Move& move) {
     default:
         board.setPiece(move.fromPos, move.movedPiece);
         board.setPiece(move.toPos, move.capturedPiece);
-       
+        
+        board.updateKingPosition(move.fromPos, move.movedPiece);
 
         break;
     }

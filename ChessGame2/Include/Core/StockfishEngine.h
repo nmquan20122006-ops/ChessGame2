@@ -1,5 +1,4 @@
-﻿
-#ifndef STOCKFISH_ENGINE_H
+﻿#ifndef STOCKFISH_ENGINE_H
 #define STOCKFISH_ENGINE_H
 #define NOMINMAX
 

@@ -78,6 +78,9 @@
     <ClCompile Include="Src\UI\InformationPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Test\Src\StockfishWrapper_Test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Core\Piece.h">
@@ -153,6 +156,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\UI\InformationPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Test\Include\StockfishWrapper_Test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

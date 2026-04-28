@@ -18,7 +18,9 @@ struct Move {
 	Piece movedPiece = Piece::Empty;
 	Piece capturedPiece = Piece::Empty;
 
+	std::string enPassantTarget = "";
 	Position enPassantCapturedPos = { -1, -1 };
+	bool isEnPassantCapture = false;
 
 	void reset() {
 
@@ -40,6 +42,7 @@ struct BotMove {
 };
 
 enum class GameStateEnum {
+
 	waitingForStart, whiteTurn, blackTurn, checkMate, check, Paused
 };
 
@@ -79,6 +82,8 @@ class GameState {
 private:
 
 	friend class GameControl;
+	friend class Board_DEBUG;
+	friend class BoardToFEN_DEBUG;
 
 	color currentTurn = color::white;
 

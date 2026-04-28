@@ -23,7 +23,7 @@ bool GameControl::requestMove(Position from, Position to) {
 
 	Move move = moveService.createMove(from, to, board);
 	moveExecutor.applyMove(move);
-	moveHistory.push_back(move);
+	undoStack.push_back(move);
 	redoStack.clear();
 
 	notifyMoveExecuted(move);
@@ -182,31 +182,33 @@ bool GameControl::executePlayerMove(Position from, Position to) {
 
 bool GameControl::executeUndoMove() {
 
-	if (moveHistory.size() < 2 || isBlocking()) return false;
+	if (undoStack.size() < 2 || isBlocking()) return false;
 
-	Move move2 = moveHistory.back();
-	Move move1 = moveHistory[moveHistory.size() - 2];
+	Move move2 = undoStack.back();
+	Move move1 = undoStack[undoStack.size() - 2];
 
 	m_isAnimating = true;
+	m_isUndoing = true;
 
 	if (animationProvider) {
 
 		animationProvider(move2.toPos, move2.fromPos, move2.movedPiece, [this, move1, move2]() {
 
-			moveExecutor.undoMove(moveHistory.back());
+			moveExecutor.undoMove(undoStack.back());
 			redoStack.push_back(move2);        
-			moveHistory.pop_back();
+			undoStack.pop_back();
 			gameState.switchTurn();
 
+			
 			animationProvider(move1.toPos, move1.fromPos, move1.movedPiece, [this, move1]() {
 
-				moveExecutor.undoMove(moveHistory.back());
+				moveExecutor.undoMove(undoStack.back());
 				redoStack.push_back(move1);     
-				moveHistory.pop_back();
+				undoStack.pop_back();
 				gameState.switchTurn();
 
-				if (!moveHistory.empty()) {
-					Move currentLast = moveHistory.back();
+				if (!undoStack.empty()) {
+					Move currentLast = undoStack.back();
 					board.setLastMove(currentLast.fromPos, currentLast.toPos);
 				}
 				else {
@@ -219,6 +221,7 @@ bool GameControl::executeUndoMove() {
 				stockfishGame.syncFromHistory(uciHistory);
 
 				m_isAnimating = false;
+				m_isUndoing = false;
 				});
 			});
 	}
@@ -229,79 +232,31 @@ bool GameControl::executeUndoMove() {
 }
 
 void GameControl::executeRedoMove() {
-	if (redoStack.size() < 2) return;
-	if (isBlocking()) return;  // thêm guard
-
-	Move moveAI = redoStack[redoStack.size() - 1];
-	Move movePlayer = redoStack[redoStack.size() - 2];
-	redoStack.pop_back();
-	redoStack.pop_back();
-
-	m_isAnimating = true;       // lock trong animation
-
-	if (animationProvider) {
-		animationProvider(movePlayer.fromPos, movePlayer.toPos, movePlayer.movedPiece,
-			[this, movePlayer, moveAI]() {
-
-				moveExecutor.redoMove(movePlayer);
-				moveHistory.push_back(movePlayer);
-				notifyMoveExecuted(movePlayer);
-
-				animationProvider(moveAI.fromPos, moveAI.toPos, moveAI.movedPiece,
-					[this, moveAI]() {
-
-						moveExecutor.redoMove(moveAI);
-						moveHistory.push_back(moveAI);
-						notifyMoveExecuted(moveAI);
-
-						board.setLastMove(moveAI.fromPos, moveAI.toPos);
-
-						// updateGameState tự switchTurn bên trong
-						updateGameState();
-
-						m_isAnimating = false;
-					});
-			});
-	}
-	else {
-		moveExecutor.redoMove(movePlayer);
-		moveHistory.push_back(movePlayer);
-		notifyMoveExecuted(movePlayer);
-
-		moveExecutor.redoMove(moveAI);
-		moveHistory.push_back(moveAI);
-		notifyMoveExecuted(moveAI);
-
-		board.setLastMove(moveAI.fromPos, moveAI.toPos);
-		updateGameState();
-	}
+	
 }
 
 void GameControl::requestUndo() {
-	if (moveHistory.empty()) {
+	if (undoStack.empty()) {
 		std::cout << "moveHistory EMPTY" << std::endl;
 		return;
 	}
 
-	std::cout << "moveHistory size before undo: " << moveHistory.size() << std::endl;
+	std::cout << "moveHistory size before undo: " << undoStack.size() << std::endl;
 
-	int steps = (moveHistory.size() >= 2) ? 2 : 1;
+	int steps = (undoStack.size() >= 2) ? 2 : 1;
 
 	for (int i = 0; i < steps; ++i) {
-		if (moveHistory.empty()) break;
+		if (undoStack.empty()) break;
 
-		Move lastMove = moveHistory.back();
-		moveHistory.pop_back();
+		Move lastMove = undoStack.back();
+		undoStack.pop_back();
 		moveExecutor.undoMove(lastMove);
 		redoStack.push_back(lastMove);
 
-		std::cout << "Pushed to redoStack, size now: " << redoStack.size() << std::endl;
 	}
 
-	std::cout << "redoStack size after undo: " << redoStack.size() << std::endl;
-
-	if (!moveHistory.empty()) {
-		Move& current = moveHistory.back();
+	if (!undoStack.empty()) {
+		Move& current = undoStack.back();
 		board.setLastMove(current.fromPos, current.toPos);
 	}
 	else {
@@ -317,7 +272,11 @@ void GameControl::requestUndo() {
 	stockfishGame.syncFromHistory(uciHistory);
 }
 
-void GameControl::requetRedo(){}
+void GameControl::requestRedo(){
+
+
+
+}
 
 void GameControl::notifyMoveExecuted(const Move& move) {
 
@@ -384,12 +343,13 @@ bool GameControl::executeAiMove(std::string& uciMove) {
 	Piece piece = board.getPiece(from);
 
 	m_isAnimating = true;
-
+	
 	if (animationProvider) {
 
 		animationProvider(from, to, piece, [this, from, to, uciMove]() {
 
 			this->requestMove(from, to);
+		
 			m_isAnimating = false;
 
 			});
@@ -397,6 +357,8 @@ bool GameControl::executeAiMove(std::string& uciMove) {
 	else {
 
 		this->requestMove(from, to);
+
+		
 		m_isAnimating = false;
 
 	}
@@ -454,12 +416,12 @@ void GameControl::resetGame() {
 
 void GameControl::resetMoveHistory() {
 
-	moveHistory.clear();
+	undoStack.clear();
 
 	std::cerr << "Reset Move History" << std::endl;
 }
 
 bool GameControl::isBlocking()const {
 
-	return stockfishGame.isThinking() || m_isAnimating;
+	return stockfishGame.isThinking() || m_isAnimating || m_isUndoing;
 }

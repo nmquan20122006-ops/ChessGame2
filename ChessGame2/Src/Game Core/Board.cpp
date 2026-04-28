@@ -116,10 +116,14 @@ void Board::updateCastleState(Piece p, Position fromPos) {
 
 	if (p == Piece::W_King) {
 		castleState.whiteKingMoved = true;
+		castleState.whiteKingRookMoved = true; 
+		castleState.whiteQueenRookMoved = true;
 		return;
 	}
 	else if (p == Piece::B_King) {
 		castleState.blackKingMoved = true;
+		castleState.blackKingRookMoved = true;
+		castleState.blackQueenRookMoved = true;
 		return;
 	}
 
@@ -142,7 +146,64 @@ void Board::updateCastleState(Piece p, Position fromPos) {
 	}
 }
 
-void Board::updateKingPosition(Position toPos,Piece &p) {
+void Board::updateCastleStateOnCapture(Piece capturedPiece, Position capturePos) {
+	// Nếu ăn rook của đối phương ở vị trí xuất phát
+	if (capturedPiece == Piece::W_Rook) {
+		if (capturePos.row == 7) {  
+			if (capturePos.col == 0) castleState.whiteQueenRookMoved = true;
+			if (capturePos.col == 7) castleState.whiteKingRookMoved = true;
+		}
+	}
+	else if (capturedPiece == Piece::B_Rook) {
+		if (capturePos.row == 0) {  
+			if (capturePos.col == 0) castleState.blackQueenRookMoved = true;
+			if (capturePos.col == 7) castleState.blackKingRookMoved = true;
+		}
+	}
+}
+
+void Board::undoCastleState(Piece p, Position fromPos) {
+
+	if (p == Piece::W_King) {
+		castleState.whiteKingMoved = false;
+		return;
+	}
+	else if (p == Piece::B_King) {
+		castleState.blackKingMoved = false;
+		return;
+	}
+
+	if (p == Piece::W_Rook) {
+		if (fromPos.row == 7) {
+			if (fromPos.col == 0) castleState.whiteQueenRookMoved = false;
+			if (fromPos.col == 7) castleState.whiteKingRookMoved = false;
+		}
+	}
+	else if (p == Piece::B_Rook) {
+		if (fromPos.row == 0) {
+			if (fromPos.col == 0) castleState.blackQueenRookMoved = false;
+			if (fromPos.col == 7) castleState.blackKingRookMoved = false;
+		}
+	}
+}
+
+void Board::undoCastleStateOnCapture(Piece capturedPiece, Position capturePos) {
+
+	if (capturedPiece == Piece::W_Rook) {
+		if (capturePos.row == 7) {
+			if (capturePos.col == 0) castleState.whiteQueenRookMoved = false;
+			if (capturePos.col == 7) castleState.whiteKingRookMoved = false;
+		}
+	}
+	else if (capturedPiece == Piece::B_Rook) {
+		if (capturePos.row == 0) {
+			if (capturePos.col == 0) castleState.blackQueenRookMoved = false;
+			if (capturePos.col == 7) castleState.blackKingRookMoved = false;
+		}
+	}
+}
+
+void Board::updateKingPosition(Position toPos,const Piece &p) {
 
 	if (p == Piece::W_King) whiteKingPos = toPos;
 	else if (p == Piece::B_King) blackKingPos = toPos;

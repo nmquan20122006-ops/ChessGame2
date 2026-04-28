@@ -148,6 +148,7 @@
     <ClCompile Include="Src\Game Core\StockfishAI.cpp" />
     <ClCompile Include="Src\UI\TextureManager.cpp" />
     <ClCompile Include="Src\Input\Utility.cpp" />
+    <ClCompile Include="Test\Src\StockfishWrapper_Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Downloads\tweeny-master\tweeny-master\include_tweeny\tweeny.h" />
@@ -175,6 +176,7 @@
     <ClInclude Include="Include\UI\TextureManager.h" />
     <ClInclude Include="Include\Core\UIManager.h" />
     <ClInclude Include="Include\Core\Utility.h" />
+    <ClInclude Include="Test\Include\StockfishWrapper_Test.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
