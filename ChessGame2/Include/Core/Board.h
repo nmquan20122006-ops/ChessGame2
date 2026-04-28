@@ -16,54 +16,6 @@ struct LastMove {
 
 };
 
-struct CastleState {
-
-	bool whiteKingMoved = false;
-	bool blackKingMoved = false;
-	
-	bool whiteKingRookMoved = false;
-	bool blackKingRookMoved = false;
-
-	bool whiteQueenRookMoved = false;
-	bool blackQueenRookMoved = false;
-
-	bool canWhiteCastleKingSide()const {
-		return !whiteKingRookMoved && !whiteKingMoved;
-	}
-
-	bool canBlackCastleKingSide()const {
-		return !blackKingRookMoved && !blackKingMoved;
-	}
-
-	bool canWhiteCastleQueenSide()const {
-		return !whiteQueenRookMoved && !whiteKingMoved;
-	}
-
-	bool canBlackCastleQueenSide()const {
-		return !blackQueenRookMoved && !blackKingMoved;
-	}
-
-	bool noMoreCastle()const {
-		return !canWhiteCastleKingSide() && !canWhiteCastleQueenSide() &&
-			!canBlackCastleKingSide() && !canBlackCastleQueenSide();
-	}
-
-	void reset() {
-		whiteKingMoved = false;
-		blackKingMoved = false;
-		whiteKingRookMoved = false;
-		blackKingRookMoved = false;
-		whiteQueenRookMoved = false;
-		blackQueenRookMoved = false;
-	}
-
-	void resetKingSide() {
-		whiteKingRookMoved = false;
-		whiteKingMoved = false;
-	}
-
-};
-
 class Board {
 
 	friend class Board_DEBUG;
