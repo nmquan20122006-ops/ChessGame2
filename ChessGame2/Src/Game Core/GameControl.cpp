@@ -1,53 +1,159 @@
-﻿#include"GameControl.h"
-#include<iostream>
+﻿#include "GameControl.h"
+#include "Board.h"
+#include "MoveExecutor.h"
+#include "MoveService.h"
+#include "StockfishAI.h" 
+#include "Bot.h"
+#include "ToFEN.h"
 
-GameControl::GameControl(Board& b, MoveExecutor& m, MoveService& c,
-	GameState& g, StockfishGame& s, DumpBot d) :
+GameControl::GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
+	std::unique_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me) {
 
-	board(b), moveExecutor(m),
+	board = b;
+	gameState = s;
+	moveService = std::move(ms);
+	moveExecutor = std::move(me);
+	
+	stockfishGame = std::make_unique<StockfishGame>(board);
 
-	moveService(c), gameState(g), stockfishGame(s), dumpBot(d)
-{
+	m_isAnimating = gameState->isAnimating;
 
 	m_onMoveExecutedListeners.push_back([this](const Move& move) {
 
-		std::string uciMove = StockfishGame::moveToUCI(move.fromPos, move.toPos);
-		this->stockfishGame.syncMove(uciMove);
+		std::string fen = gameState->currentFEN;
+		this->stockfishGame->syncMove(fen);
 
 		});
 }
 
 bool GameControl::requestMove(Position from, Position to) {
 
-	if (!moveService.isValidMove(from, to, board)) return false;
+	//---before move
 
-	Move move = moveService.createMove(from, to, board);
-	moveExecutor.applyMove(move);
-	undoStack.push_back(move);
-	redoStack.clear();
+	if (!moveService->isValidMove(from, to, *board)) return false;
+
+	//create move object
+	Move move = moveService->createMove(from, to, *board);
+
+	if (move.moveType == MoveType::promotion) {
+
+		preparePromotion(from, to);
+
+		return true;
+	}
+	//normal move
+	else {
+
+		//record the state before move for undo functionality
+		moveExecutor->recordPrevBoard(move);
+
+		//---after move
+		moveExecutor->applyMove(move);
+
+		finalizeMove(move);
+
+		return true;
+	}
+}
+
+bool GameControl::requestAiMove(Position from, Position to, char promotionChar) {
+
+	if (!moveService->isValidMove(from, to, *board))return false;
+
+	Move move = moveService->createMove(from, to, *board);
+
+	if (promotionChar != '\0' && move.moveType == MoveType::promotion) {
+		move.promotionPiece = ToFEN::charToPiece(gameState->currentTurn, promotionChar);
+	}
+
+	moveExecutor->recordPrevBoard(move);
+	moveExecutor->applyMove(move);
+
+	finalizeMove(move);
+}
+
+void GameControl::preparePromotion(Position fromPos, Position toPos) {
+	
+	gameState->pendingFrom = fromPos;
+	gameState->pendingTo = toPos;
+
+	gameState->gameStateEnum = GameStateEnum::waitingForPromotion;
+}
+
+void GameControl::executePromotionMove(Piece selectedPiece) {
+
+	Position from = gameState->pendingFrom;
+	Position to = gameState->pendingTo;
+
+	Move move = moveService->createMove(from, to, *board);
+
+	move.promotionPiece = selectedPiece;
+
+	//record the state before move for undo functionality
+	moveExecutor->recordPrevBoard(move);
+
+	moveExecutor->applyMove(move);
+
+	updateGameState();
+
+	gameState->gameStateEnum = GameStateEnum::normal;
+	gameState->pendingFrom = { -1, -1 };
+	gameState->pendingTo = { -1, -1 };
+}
+
+void GameControl::finalizeMove(const Move& move) {
+	//update half move clock and full move number
+	gameState->halfMoveClockCount = halfMoveClockProcess(gameState->halfMoveClockCount, move);
+	gameState->fullMoveNumberCount = fullMoveNumberProcess(gameState->fullMoveNumberCount, gameState->currentTurn);
+
+	//update game state (check, checkmate, turn switch)
+	updateGameState();
+
+	//update FEN
+	gameState->currentFEN = ToFEN::FullFEN(*board, move, *gameState);
 
 	notifyMoveExecuted(move);
-	updateGameState();
+}
+
+bool GameControl::executePlayerMove(Position from, Position to) {
+
+	if (animationProvider) {
+
+		m_isAnimating = true;
+
+		Piece piece = board->getPiece(from);
+
+		animationProvider(from, to, piece, [this, from, to]() {
+
+			this->requestMove(from, to);
+
+			m_isAnimating = false;
+			});
+	}
+	else {
+		this->requestMove(from, to);
+	}
+
 	return true;
 }
 
 void GameControl::handleSquareSelection(Position pos) {
 
-	if (stockfishGame.isThinking())return;
+	if (stockfishGame->isThinking())return;
 
-	if (!board.isInside(pos))return;
+	if (!board->isInside(pos))return;
 
-	if (!gameState.isSelected) {
+	if (!gameState->isSelected) {
 
-		Piece p = board.getPiece(pos);
-		color pieceColor = gameState.getColor(p);
+		Piece p = board->getPiece(pos);
+		color pieceColor = gameState->getColor(p);
 
-		if (pieceColor == gameState.currentTurn) {
+		if (pieceColor == gameState->currentTurn) {
 
-			gameState.setSelectPos(pos);
-			gameState.setValidMoves(moveService.getValidMoves(pos, board));
+			gameState->setSelectPos(pos);
+			gameState->setValidMoves(moveService->getValidMoves(pos, *board));
 
-			gameState.isSelected = true;
+			gameState->isSelected = true;
 			return;
 		}
 		
@@ -55,26 +161,26 @@ void GameControl::handleSquareSelection(Position pos) {
 
 	else {
 
-		Piece p = board.getPiece(pos);
-		color pieceColor = gameState.getColor(p);
+		Piece p = board->getPiece(pos);
+		color pieceColor = gameState->getColor(p);
 
-		if (pos == gameState.getSelectPos()) {
+		if (pos == gameState->getSelectPos()) {
 
 			deselect();
 
 		}
 
-		else if (p != Piece::Empty && pieceColor == gameState.currentTurn) {
+		else if (p != Piece::Empty && pieceColor == gameState->currentTurn) {
 
-			gameState.setSelectPos(pos);
+			gameState->setSelectPos(pos);
 
-			gameState.setValidMoves(moveService.getValidMoves(pos, board));
+			gameState->setValidMoves(moveService->getValidMoves(pos, *board));
 
 		}
 
-		else if (gameState.isPosInVector(pos)) {
+		else if (gameState->isPosInVector(pos)) {
 
-			Position from = gameState.getSelectPos();
+			Position from = gameState->getSelectPos();
 			Position to = pos;
 
 			this->executePlayerMove(from, to);
@@ -92,59 +198,59 @@ void GameControl::handleSquareSelection(Position pos) {
 
 void GameControl::handlePress(Position pos, sf::Vector2f mousePos) {
 
-	if (stockfishGame.isThinking())return;
+	if (stockfishGame->isThinking())return;
 
-	if (!board.isInside(pos))return;
+	if (!board->isInside(pos))return;
 	
-	Piece p = board.getPiece(pos);
-	color pieceColor = gameState.getColor(p);
+	Piece p = board->getPiece(pos);
+	color pieceColor = gameState->getColor(p);
 
-	dragState.isActive = true;
-	dragState.mousePosition = mousePos;
+	gameState->drag.isActive = true;
+	gameState->drag.mousePosition = mousePos;
 
-	if (p != Piece::Empty && pieceColor == gameState.currentTurn) {
+	if (p != Piece::Empty && pieceColor == gameState->currentTurn) {
 
-		dragState.draggingPiece = p;
-		dragState.isDragging = true;
-		dragState.fromPos = pos;
-		dragState.isActive = true;
+		gameState->drag.draggingPiece = p;
+		gameState->drag.isDragging = true;
+		gameState->drag.fromPos = pos;
+		gameState->drag.isActive = true;
 
 	}
 
 	else {
 
-		dragState.isDragging = false;
+		gameState->drag.isDragging = false;
 	}
 
 }
 
 void GameControl::handleMove(sf::Vector2f mousePos) {
 
-	if (dragState.isActive) {
+	if (gameState->drag.isActive) {
 
-		dragState.mousePosition = mousePos;
+		gameState->drag.mousePosition = mousePos;
 	}
 	
 }
 
 void GameControl::handleRelease(Position toPos) {
 
-	if (!board.isInside(toPos))return;
+	if (!board->isInside(toPos))return;
 	if (isBlocking()) return;
 
-	dragState.isActive = false;
+	gameState->drag.isActive = false;
 
-	Position from = dragState.fromPos;
+	Position from = gameState->drag.fromPos;
 
 	if (from != toPos) {
 
-		if (gameState.hasSelection()&&from==gameState.selectedPos) {
+		if (gameState->hasSelection()&&from==gameState->selectedPos) {
 
-			if (gameState.isPosInVector(toPos)) {
+			if (gameState->isPosInVector(toPos)) {
 
 				requestMove(from, toPos);
 
-				dragState.reset();
+				gameState->drag.reset();
 				deselect();
 			}
 			else {
@@ -155,127 +261,7 @@ void GameControl::handleRelease(Position toPos) {
 		}
 	}
 
-	dragState.reset();
-}
-
-bool GameControl::executePlayerMove(Position from, Position to) {
-
-	if (animationProvider) {
-
-		m_isAnimating = true;
-
-		Piece piece = board.getPiece(from);
-
-		animationProvider(from, to, piece, [this, from, to]() {
-
-			this->requestMove(from, to);
-
-			m_isAnimating = false;
-			});
-	}
-	else {
-		this->requestMove(from, to);
-	}
-
-	return true;
-}
-
-bool GameControl::executeUndoMove() {
-
-	if (undoStack.size() < 2 || isBlocking()) return false;
-
-	Move move2 = undoStack.back();
-	Move move1 = undoStack[undoStack.size() - 2];
-
-	m_isAnimating = true;
-	m_isUndoing = true;
-
-	if (animationProvider) {
-
-		animationProvider(move2.toPos, move2.fromPos, move2.movedPiece, [this, move1, move2]() {
-
-			moveExecutor.undoMove(undoStack.back());
-			redoStack.push_back(move2);        
-			undoStack.pop_back();
-			gameState.switchTurn();
-
-			
-			animationProvider(move1.toPos, move1.fromPos, move1.movedPiece, [this, move1]() {
-
-				moveExecutor.undoMove(undoStack.back());
-				redoStack.push_back(move1);     
-				undoStack.pop_back();
-				gameState.switchTurn();
-
-				if (!undoStack.empty()) {
-					Move currentLast = undoStack.back();
-					board.setLastMove(currentLast.fromPos, currentLast.toPos);
-				}
-				else {
-					board.resetLastMove();
-				}
-
-				auto uciHistory = stockfishGame.getMoveHistory();
-				if (!uciHistory.empty()) uciHistory.pop_back();
-				if (!uciHistory.empty()) uciHistory.pop_back();
-				stockfishGame.syncFromHistory(uciHistory);
-
-				m_isAnimating = false;
-				m_isUndoing = false;
-				});
-			});
-	}
-	else {
-		requestUndo();
-	}
-	return true;
-}
-
-void GameControl::executeRedoMove() {
-	
-}
-
-void GameControl::requestUndo() {
-	if (undoStack.empty()) {
-		std::cout << "moveHistory EMPTY" << std::endl;
-		return;
-	}
-
-	std::cout << "moveHistory size before undo: " << undoStack.size() << std::endl;
-
-	int steps = (undoStack.size() >= 2) ? 2 : 1;
-
-	for (int i = 0; i < steps; ++i) {
-		if (undoStack.empty()) break;
-
-		Move lastMove = undoStack.back();
-		undoStack.pop_back();
-		moveExecutor.undoMove(lastMove);
-		redoStack.push_back(lastMove);
-
-	}
-
-	if (!undoStack.empty()) {
-		Move& current = undoStack.back();
-		board.setLastMove(current.fromPos, current.toPos);
-	}
-	else {
-		board.resetLastMove();
-	}
-
-	gameState.switchTurn();
-
-	auto uciHistory = stockfishGame.getMoveHistory();
-	for (int i = 0; i < steps; ++i) {
-		if (!uciHistory.empty()) uciHistory.pop_back();
-	}
-	stockfishGame.syncFromHistory(uciHistory);
-}
-
-void GameControl::requestRedo(){
-
-
-
+	gameState->drag.reset();
 }
 
 void GameControl::notifyMoveExecuted(const Move& move) {
@@ -300,37 +286,28 @@ void GameControl::notifyStateChanged(const GameStateEnum& newState) {
 
 void GameControl::updateGameState() {
 
-	gameState.switchTurn();
+	gameState->switchTurn();
 
-	auto& Turn = gameState.currentTurn;
+	auto& Turn = gameState->currentTurn;
 
-	gameState.isCheck = moveService.Check(board, Turn);
+	gameState->isCheck = moveService->Check(*board, Turn);
 
-	if (gameState.isCheck)gameState.checkPos = board.findKing(Turn==color::white);
+	if (gameState->isCheck)gameState->checkPos = board->findKing(Turn==color::white);
 
-	gameState.isCheckMate = moveService.CheckMate(board, Turn);
+	gameState->isCheckMate = moveService->CheckMate(*board, Turn);
 }
 
-void GameControl::updateAiMove() {
+void GameControl::initStockfishGame() {
 
-	color currentTurn = gameState.currentTurn;
-	auto& ai = gameState.setAiState();
+	stockfishGame->initAI(L"stockfish.exe");
 
-	if (!ai.isAiEnabled || currentTurn != ai.aiTurn) return;
+	stockfishGame->setDifficulty(20);
+	stockfishGame->newGame(true);
 
-	if (stockfishGame.isThinking() || isBlocking())return;
+	gameState->setAiState().isAiEnabled = true;
+	gameState->setAiState().aiTurn = color::black;
 
-
-	std::string uciMove = stockfishGame.getPendingMove();
-
-	if (!uciMove.empty()) {
-
-		executeAiMove(uciMove);
-	}
-	else{
-
-		stockfishGame.startThinking(1500);
-	}
+	gameState->setDualMode(false);
 }
 
 bool GameControl::executeAiMove(std::string& uciMove) {
@@ -340,88 +317,124 @@ bool GameControl::executeAiMove(std::string& uciMove) {
 	StockfishGame::fromUCI(uciMove.substr(0, 2), from);
 	StockfishGame::fromUCI(uciMove.substr(2, 2), to);
 
-	Piece piece = board.getPiece(from);
+	char promotionChar = (uciMove.length() == 5) ? uciMove[4] : '\0';
+
+	Piece piece = board->getPiece(from);
 
 	m_isAnimating = true;
 	
 	if (animationProvider) {
 
-		animationProvider(from, to, piece, [this, from, to, uciMove]() {
+		animationProvider(from, to, piece, [this, from, to, promotionChar]() {
 
-			this->requestMove(from, to);
-		
+			this->requestAiMove(from, to, promotionChar);
+
 			m_isAnimating = false;
 
 			});
 	}
 	else {
 
-		this->requestMove(from, to);
+		this->requestAiMove(from, to, promotionChar);
 
-		
 		m_isAnimating = false;
 
 	}
 	return true;
 }
 
-/*void GameControl::updateAiDualMode() {
+void GameControl::updateAiMove() {
 
-	color currentTurn = gameState.currentTurn;
-	auto& ai = gameState.setAiState();
+	color currentTurn = gameState->currentTurn;
+	auto& ai = gameState->getAiState();
 
-	if (!ai.isAiEnabled)return;
-	if (stockfishGame.isThinking())return;
+	if (!ai.isAiEnabled || currentTurn != ai.aiTurn) return;
 
-	bool isAllowedToThink = gameState.isDualMode || (currentTurn == ai.aiTurn);
-	if (!isAllowedToThink)return;
+	if (isBlocking())return;
 
-	if (currentTurn == color::white) {
+	std::string uciMove = stockfishGame->getPendingMove();
 
-		ai.isAiThinking = true;
-		BotMove move = dumpBot.bot_makeMove(board);
-		std::string uciMove = StockfishGame::moveToUCI(move.fromPos, move.toPos);
+	if (!uciMove.empty()) {
+
 		executeAiMove(uciMove);
+	}
+	else{
+
+		stockfishGame->startThinking(1500);
+	}
+}
+
+void GameControl::syncAfterUndo(const UndoEntry& undoEntry) {
+	//Restore the board state, turn, FEN, half move clock, and full move number from the undo entry
+	moveExecutor->syncAfterUndo(undoEntry);
+
+	//update stockfish fen to match with the restored game state after undoing the move
+	stockfishGame->syncMove(gameState->currentFEN);
+}
+
+bool GameControl::executeUndoMove() {
+
+	if (gameState->undoStack.empty() || m_isAnimating)return false;
+
+	m_isAnimating = true;
+
+	UndoEntry lastEntry = gameState->undoStack.back();
+	gameState->undoStack.pop_back();
+
+	Position toPos = lastEntry.moveBefore.toPos;
+	Position fromPos = lastEntry.moveBefore.fromPos;
+	Piece pieceToMoveBack = board->getPiece(toPos);
+
+	if (animationProvider) {
+		animationProvider(toPos, fromPos, pieceToMoveBack, [this, lastEntry]() {
+			
+			this->syncAfterUndo(lastEntry);
+			
+			this->m_isAnimating = false;
+
+			if (gameState->getAiState().isAiEnabled && gameState->currentTurn == gameState->getAiState().aiTurn) {
+				this->executeUndoMove();
+			}
+			});
 	}
 	else {
 
-		if (!stockfishGame.isThinking()) {
-
-			std::string uciMove = stockfishGame.getPendingMove();
-
-			if (!uciMove.empty()) {
-				ai.isAiThinking = true;
-				executeAiMove(uciMove);
-			}
-			else {
-				stockfishGame.startThinking(1500);
-			}
+		this->syncAfterUndo(lastEntry);
+		if (gameState->getAiState().isAiEnabled && gameState->currentTurn == gameState->getAiState().aiTurn) {
+			this->executeUndoMove();
 		}
+		this->m_isAnimating = false;
 	}
-}*/
+	return true;
+}
+
+int GameControl::halfMoveClockProcess(int prevClock, const Move& move) {
+
+	if (move.movedPiece == Piece::B_Pawn || move.movedPiece == Piece::W_Pawn || move.capturedPiece != Piece::Empty) {
+		return 0;
+	}
+	return prevClock + 1;
+}
+
+int GameControl::fullMoveNumberProcess(int prevClock, const color currentTurn) {
+
+	if (currentTurn == color::black)return prevClock + 1;
+	return prevClock;
+}
 
 void GameControl::resetGame() {
 
-	board.resetBoard();
+	board->resetBoard();
 
-	board.initBoard();
+	board->initBoard();
 
-	gameState.reset();
+	gameState->reset();
 
-	stockfishGame.newGame(true);
+	stockfishGame->newGame(true);
 
-	resetMoveHistory();
-
-}
-
-void GameControl::resetMoveHistory() {
-
-	undoStack.clear();
-
-	std::cerr << "Reset Move History" << std::endl;
 }
 
 bool GameControl::isBlocking()const {
 
-	return stockfishGame.isThinking() || m_isAnimating || m_isUndoing;
+	return stockfishGame->isThinking() || m_isAnimating || m_isUndoing;
 }

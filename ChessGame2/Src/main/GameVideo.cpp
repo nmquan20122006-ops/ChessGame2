@@ -2,17 +2,19 @@
 #include<iostream>
 
 GameVideo::GameVideo() :
-	window(sf::VideoMode(windowWidth, windowHeight), "Chess"),
+	window(sf::VideoMode(windowWidth, windowHeight), "Chess"), gui(window), 
+	analysisPanel(gui), informationPanel(gui), uiManager(windowSize, analysisPanel) {
 
-	board(), gui(window),
+	board = std::make_shared<Board>();
+	state = std::make_shared<GameState>();
 
-	moveService(), state(), moveExecutor(board), stockfishGame(), dumpBot(moveService, color::white),
+	moveService = std::make_unique<MoveService>();
+	moveExecutor = std::make_unique<MoveExecutor>(board,state);
 
-	gameControl(board, moveExecutor, moveService, state, stockfishGame, dumpBot),
+	gameControl = std::make_unique<GameControl>(board, state, moveService, moveExecutor);
 
-	inputController(gameControl),
-
-	pieceRender(gameControl), analysisPanel(gui), informationPanel(gui), uiManager(windowSize, analysisPanel) {
+	pieceRender.setTarget(gameControl.get());
+	inputController.setTarget(gameControl.get());
 
 	window.setFramerateLimit(144);
 
@@ -26,9 +28,9 @@ GameVideo::GameVideo() :
 	audio.initSound();
 	loadTextureForMember();
 
-	initStockfish();
+	gameControl->initStockfishGame();
 
-	gameControl.setAnimationProvider([this](Position from, Position to, Piece piece, std::function<void()> onComplete) {
+	gameControl->setAnimationProvider([this](Position from, Position to, Piece piece, std::function<void()> onComplete) {
 
 		if (piece == Piece::Empty) {
 			if (onComplete) onComplete();
@@ -73,7 +75,9 @@ void GameVideo::renderWindow(sf::RenderWindow& window,float dt) {
 
 	renderHighlightValidMove(window);
 
-	pieceRender.renderAll(window,board);
+	pieceRender.renderAll(window,*board);
+
+	renderPromotionPanel(window);
 
 	animator.render(window);
 
@@ -106,22 +110,9 @@ void GameVideo::loadTextureForMember() {
 
 }
 
-void GameVideo::initStockfish() {
-
-	stockfishGame.initAI(L"stockfish.exe");
-
-	stockfishGame.setDifficulty(20);
-	stockfishGame.newGame(true);
-
-	gameControl.getState().setAiState().isAiEnabled = true;
-	gameControl.getState().setAiState().aiTurn = color::black;
-
-	gameControl.getState().setDualMode(false);
-}
-
 void GameVideo::renderHightlight(sf::RenderWindow& window) {
 
-	const auto& state = gameControl.getState();
+	const auto& state = gameControl->getState();
 
 	if (state.hasSelection()) {
 
@@ -132,7 +123,7 @@ void GameVideo::renderHightlight(sf::RenderWindow& window) {
 
 void GameVideo::renderHighlightLastMove(sf::RenderWindow& window) {
 	
-	LastMove lastMove = board.getLastMove();
+	LastMove lastMove = board->getLastMove();
 
 	boardRenderer.drawHighlightLastMove(window, lastMove.from, lastMove.to);
 }
@@ -146,7 +137,7 @@ void GameVideo::renderBoardHover(sf::RenderWindow& window) {
 
 void GameVideo::renderCheckSquare(sf::RenderWindow& window) {
 
-	const auto& state = gameControl.getState();
+	const auto& state = gameControl->getState();
 
 	if (state.getIsCheck()) {
 
@@ -157,14 +148,14 @@ void GameVideo::renderCheckSquare(sf::RenderWindow& window) {
 
 void GameVideo::renderHighlightValidMove(sf::RenderWindow& window) {
 
-	const auto& state = gameControl.getState();
-	const auto& drag = gameControl.getState().getDragState();
+	const auto& state = gameControl->getState();
+	const auto& drag = gameControl->getState().getDragState();
 
 	if (state.hasSelection()||drag.isActive) {
 
 		for (const auto& pos : state.getValidMoves()) {
 
-			Piece targetPiece = board.getPiece(pos);
+			Piece targetPiece = board->getPiece(pos);
 
 			bool isEnemy = (targetPiece != Piece::Empty);
 
@@ -184,11 +175,19 @@ void GameVideo::changeCursor(sf::RenderWindow& window) {
 
 }
 
+void GameVideo::renderPromotionPanel(sf::RenderWindow& window) {
+
+	if (state->getGameStateEnum() != GameStateEnum::waitingForPromotion) return;
+
+	boardRenderer.drawPromotionPanel(window, state->getCurrentTurn(), state->getPendingTo().col);
+	pieceRender.drawListPromotionPiece(window, state->getCurrentTurn(), state->getPendingTo().col);
+}
+
 void GameVideo::gameLoop(float dt) {
 
 	animator.update(dt);
 	
-	gameControl.updateAiMove();
+	gameControl->updateAiMove();
 
 	renderWindow(window, dt);
 }

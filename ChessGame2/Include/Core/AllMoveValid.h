@@ -1,12 +1,9 @@
 #pragma once
 #include<vector>
-#include"Board.h"
-#include"MoveValidator.h"
+#include"Utility.h"
+class Board;
 
 class AllValidMove {
-private:
-
-	static MoveValidator moveValidator;
 
 public:
 

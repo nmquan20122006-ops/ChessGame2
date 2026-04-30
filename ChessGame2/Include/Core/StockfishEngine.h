@@ -1,4 +1,16 @@
-﻿#ifndef STOCKFISH_ENGINE_H
+﻿/**
+* StockfishEngine.h
+* @brief This file defines the StockfishEngine class, which provides an interface for communicating with the Stockfish chess engine. 
+* @brief It includes methods for starting and stopping the engine, sending commands, reading responses, setting the game position, making moves, and retrieving the best move from the engine
+* @brief The class manages the process and communication pipes to facilitate interaction with the Stockfish engine.
+* @author [Nguyen Minh Quan]
+* @date [21/3/2026]
+* @version [1.0]
+* copyright [Copyright (c) 2026 Nguyen Minh Quan. All rights reserved.]
+* This game is developed for educational purposes and is not intended for commercial use
+*/
+
+#ifndef STOCKFISH_ENGINE_H
 #define STOCKFISH_ENGINE_H
 #define NOMINMAX
 

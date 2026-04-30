@@ -18,40 +18,33 @@
 class GameVideo {
 
 private:
+	std::shared_ptr<Board> board;
+	std::shared_ptr<GameState> state;
 
-	Board board;
+	std::unique_ptr<MoveExecutor> moveExecutor;
+	std::unique_ptr<MoveService> moveService;
+	std::unique_ptr<StockfishGame> stockfishGame;
+	std::unique_ptr<DumpBot> dumpBot;
+
+	std::unique_ptr<GameControl> gameControl;
+
+	TextureManager textureManager;
+	AudioManager audio;
+
+	BoardRenderer boardRenderer;
+	PieceRenderer pieceRender;
+	InputController inputController;
 
 	sf::RenderWindow window;
 	tgui::GuiSFML gui;
-
-	TextureManager textureManager;
-
-	BoardRenderer boardRenderer;
-
-	PieceRenderer pieceRender;
-
-	InputController inputController;
-
-	AudioManager audio;
-
-	MoveExecutor moveExecutor;
-
-	MoveService moveService;
-
-	GameState state;
-	StockfishGame stockfishGame;
-	DumpBot dumpBot;
-	
-	GameControl gameControl;
-	
 	TweenyAnimator animator;
 	sf::Clock clock;
 
+	UIManager uiManager;
 	AnalysisPanel analysisPanel;
 	InformationPanel informationPanel;
 	
 	sf::Vector2u windowSize = { windowWidth,windowHeight };
-	UIManager uiManager;
 
 	const sf::View& boardView = uiManager.getBoardView();
 	const sf::View& uiView = uiManager.getUiView();
@@ -64,8 +57,6 @@ public:
 
 	void Run();
 
-	void initStockfish();
-
 	void renderHightlight(sf::RenderWindow& window);
 
 	void renderHighlightValidMove(sf::RenderWindow& window);
@@ -77,6 +68,8 @@ public:
 	void renderHighlightLastMove(sf::RenderWindow& window);
 
 	void renderCheckSquare(sf::RenderWindow& window);
+
+	void renderPromotionPanel(sf::RenderWindow& window);
 
 	void changeCursor(sf::RenderWindow& window);
 

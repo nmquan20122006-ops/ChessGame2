@@ -1,5 +1,28 @@
 ﻿#include"MoveValidator.h"
+#include"Board.h"
 #include<cmath>
+
+bool MoveValidator::isPathClear(Position fromPos, Position toPos, const Board& classBoard) {
+
+	int rowStep = (toPos.row > fromPos.row) ? 1 : (toPos.row < fromPos.row ? -1 : 0);
+	
+	int colStep = (toPos.col > fromPos.col) ? 1 : (toPos.col < fromPos.col ? -1 : 0);
+
+	int currentRow = fromPos.row + rowStep;
+
+	int currentCol = fromPos.col + colStep;
+
+	while (currentRow != toPos.row || currentCol != toPos.col) {
+
+		if (!classBoard.isEmpty(Position{ currentRow,currentCol })) {
+			return false;
+		}
+
+		currentRow += rowStep;
+		currentCol += colStep;
+	}
+	return true;
+}
 
 bool MoveValidator::checkPawn(Position fromPos, Position toPos, const Board& classBoard) {
 
@@ -44,28 +67,6 @@ bool MoveValidator::checkPawn(Position fromPos, Position toPos, const Board& cla
 	}
 
 	return false;
-}
-
-bool MoveValidator::isPathClear(Position fromPos, Position toPos, const Board& classBoard) {
-
-	int rowStep = (toPos.row > fromPos.row) ? 1 : (toPos.row < fromPos.row ? -1 : 0);
-	
-	int colStep = (toPos.col > fromPos.col) ? 1 : (toPos.col < fromPos.col ? -1 : 0);
-
-	int currentRow = fromPos.row + rowStep;
-
-	int currentCol = fromPos.col + colStep;
-
-	while (currentRow != toPos.row || currentCol != toPos.col) {
-
-		if (!classBoard.isEmpty(Position{ currentRow,currentCol })) {
-			return false;
-		}
-
-		currentRow += rowStep;
-		currentCol += colStep;
-	}
-	return true;
 }
 
 bool MoveValidator::checkRook(Position fromPos, Position toPos, const Board& classBoard) {
@@ -141,32 +142,6 @@ bool MoveValidator::checkKnight(Position fromPos, Position toPos, const Board& c
 
 	return classBoard.isEmpty(toPos) || isOpponent(knight, targetPiece);
 }
-
-bool MoveValidator::isValidMove(Position fromPos, Position toPos, const Board& classBoard) {
-
-	Piece fromPiece = classBoard.getPiece(fromPos);
-
-	Piece targetPiece = classBoard.getPiece(toPos);
-
-	if (fromPiece == Piece::Empty)return false;
-
-	if (isSameColor(fromPiece, targetPiece))return false;
-
-	Piece type = getType(fromPiece);
-
-	switch (type) {
-
-	case Piece::W_Pawn: return checkPawn(fromPos,toPos,classBoard)||isCanEnPassant(fromPos,toPos,classBoard);
-	case Piece::W_Rook:return checkRook(fromPos, toPos, classBoard);
-	case Piece::W_Knight:return checkKnight(fromPos, toPos, classBoard);
-	case Piece::W_Bishop:return checkBishop(fromPos, toPos, classBoard);
-	case Piece::W_Queen:return checkQueen(fromPos, toPos, classBoard);
-	case Piece::W_King:return checkKing(fromPos, toPos, classBoard)||isCanCastle(fromPos,toPos,classBoard);
-
-	default:return false;
-	}
-
-} 
 
 bool MoveValidator::isInCheck(bool whiteTurn,const Board& classBoard) {
 
@@ -296,7 +271,7 @@ bool MoveValidator::isCanEnPassant(Position fromPos, Position toPos, const Board
 
 	Piece p = board.getPiece(fromPos);
 
-	if (getType(p) != Piece::W_Pawn)return false;
+	if (getType(p) != Piece::W_Pawn && getType(p) != Piece::B_Pawn)return false;
 
 	LastMove lastMove = board.getLastMove();
 
@@ -321,33 +296,12 @@ bool MoveValidator::isCanEnPassant(Position fromPos, Position toPos, const Board
 	return false;
 }
 
-bool MoveValidator::isMoveLegal(Position fromPos, Position toPos, const Board& board) {
-
-	Piece p = board.getPiece(fromPos);
-	bool isWhiteKing = isWhite(p);
-
-	Board tempBoard = board;
-	tempBoard.movePiece(fromPos, toPos);
-
-	Position kingPos = tempBoard.findKing(isWhiteKing);
-
-	if (kingPos.row == -1) return false;
-
-	if (isUnderAttack(kingPos, isWhiteKing, tempBoard)) {
-		return false;
-	}
-
-	return true;
-}
-
 bool MoveValidator::isCanCastle(Position fromPos, Position toPos, const Board& board) {
 
 	Piece fromPiece = board.getPiece(fromPos);
 
 	if (fromPiece != Piece::W_King && fromPiece != Piece::B_King)return false;
-
 	if (std::abs(toPos.col - fromPos.col) != 2)return false;
-
 	if (toPos.row != fromPos.row)return false;
 
 	bool isWhite = (fromPiece == Piece::W_King);
@@ -379,7 +333,7 @@ bool MoveValidator::isCanCastle(Position fromPos, Position toPos, const Board& b
 
 	}
 
-	if (MoveValidator::isUnderAttack({ startRow, fromPos.row }, isWhite, board)) return false;
+	if (MoveValidator::isUnderAttack({ startRow, fromPos.col }, isWhite, board)) return false;
 
 	if (isKingSide) {
 		
@@ -417,6 +371,51 @@ bool MoveValidator::isCanCastle(Position fromPos, Position toPos, const Board& b
 	}
 	return true;
 }
+
+bool MoveValidator::isMoveLegal(Position fromPos, Position toPos, const Board& board) {
+
+	Piece p = board.getPiece(fromPos);
+	bool isWhiteKing = isWhite(p);
+
+	Board tempBoard = board;
+	tempBoard.movePiece(fromPos, toPos);
+
+	Position kingPos = tempBoard.findKing(isWhiteKing);
+
+	if (kingPos.row == -1) return false;
+
+	if (isUnderAttack(kingPos, isWhiteKing, tempBoard)) {
+		return false;
+	}
+
+	return true;
+}
+
+bool MoveValidator::isValidMove(Position fromPos, Position toPos, const Board& classBoard) {
+
+	Piece fromPiece = classBoard.getPiece(fromPos);
+
+	Piece targetPiece = classBoard.getPiece(toPos);
+
+	if (fromPiece == Piece::Empty)return false;
+
+	if (isSameColor(fromPiece, targetPiece))return false;
+
+	Piece type = getType(fromPiece);
+
+	switch (type) {
+
+	case Piece::W_Pawn: return checkPawn(fromPos,toPos,classBoard)||isCanEnPassant(fromPos,toPos,classBoard);
+	case Piece::W_Rook:return checkRook(fromPos, toPos, classBoard);
+	case Piece::W_Knight:return checkKnight(fromPos, toPos, classBoard);
+	case Piece::W_Bishop:return checkBishop(fromPos, toPos, classBoard);
+	case Piece::W_Queen:return checkQueen(fromPos, toPos, classBoard);
+	case Piece::W_King:return checkKing(fromPos, toPos, classBoard)||isCanCastle(fromPos,toPos,classBoard);
+
+	default:return false;
+	}
+
+} 
 
 bool MoveValidator::isCanExecuteMove(Position fromPos, Position toPos, const Board& board) {
 

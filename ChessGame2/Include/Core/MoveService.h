@@ -15,12 +15,13 @@
 #include"MoveValidator.h"
 #include"GameState.h"
 
+class Board;
+
 class MoveService {
 
 private:
 
 	AllValidMove generator;
-	MoveValidator validator;
 
 	bool isUnderAttack(Position pos, color target, const Board& board);
 
@@ -31,7 +32,7 @@ public:
 	}
 
 	bool isValidMove(Position fromPos, Position toPos, const Board& board) {
-		return validator.isCanExecuteMove(fromPos, toPos, board);
+		return MoveValidator::isCanExecuteMove(fromPos, toPos, board);
 	}
 
 	bool Check(const Board& board, color turn);

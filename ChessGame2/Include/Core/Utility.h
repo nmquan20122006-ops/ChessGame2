@@ -1,6 +1,10 @@
 ﻿#pragma once
-#include"../Constants/Constants.h"
+#include<iostream>
 #include<SFML/Graphics.hpp>
+#include"Constants.h"
+
+class GameState;
+struct Move;
 
 struct Position {
 
@@ -25,8 +29,8 @@ struct Position {
 
 inline Position pixelToCoordinate(sf::Vector2i pixelPos, int squareSize) {
 
-	int c = (pixelPos.x - offset) / squareSize;
-	int r = (pixelPos.y - offset) / squareSize;
+	int c = static_cast<int>(std::floor((static_cast<float>(pixelPos.x) - offset) / squareSize));
+	int r = static_cast<int>(std::floor((static_cast<float>(pixelPos.y) - offset) / squareSize));
 
 	return { r, c };
 }
@@ -49,4 +53,5 @@ inline sf::Vector2f toPixel(Position pos) {
 
 	return sf::Vector2f(x, y);
 }
+
 

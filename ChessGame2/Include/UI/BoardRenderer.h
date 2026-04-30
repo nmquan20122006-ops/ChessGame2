@@ -1,7 +1,10 @@
 #pragma once
 #include<SFML/Graphics.hpp>
-#include"../Constants/Constants.h"
+#include"Constants.h"
 #include"Utility.h"
+
+enum class color;
+class PieceRenderer;
 
 class BoardRenderer {
 
@@ -51,6 +54,8 @@ public:
 	void initBorderTexture(sf::Texture& texture);
 
 	void initCursorTexture(sf::Texture& texture);
+
+	void drawPromotionPanel(sf::RenderWindow& window,color turn, int col);
 
 	void initFont(sf::Font& font);
 

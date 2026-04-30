@@ -1,4 +1,5 @@
 #include"Bot.h"
+#include"Board.h"
 #include<algorithm>
 #include<ctime>
 

@@ -1,6 +1,6 @@
 ﻿#include"PieceRenderer.h"
 
-PieceRenderer::PieceRenderer(GameControl& g) :game(g), baseScale(0.f) {}
+PieceRenderer::PieceRenderer(): baseScale(0.f) {}
 
 void PieceRenderer::setupPieceSprites(TextureManager& tm) {
 
@@ -25,6 +25,7 @@ void PieceRenderer::setupPieceSprites(TextureManager& tm) {
 		}
 	}
 }
+
 void PieceRenderer::drawPiece(sf::RenderWindow& window, Position pos, const Board& board) {
 
     Piece piece = board.getPiece(pos);
@@ -61,9 +62,43 @@ void PieceRenderer::drawPiece(sf::RenderWindow& window, Position pos, const Boar
     window.draw(sprite);
 }
 
+void PieceRenderer::drawPieceAtPos(sf::RenderWindow& window, Piece piece, float row, int col) {
+
+	if (piece == Piece::Empty) return;
+    
+	int colorIndex = isWhite(piece) ? 0 : 1;
+	int typeIndex = static_cast<int>(getType(piece)) - 1;
+    
+	sf::Sprite& sprite = pieceSprite[colorIndex][typeIndex];
+	sprite.setScale(baseScale, baseScale);
+
+	float offsetX = (squareSize - sprite.getGlobalBounds().width) / 2.f;
+	float offsetY = (squareSize - sprite.getGlobalBounds().height) / 2.f;
+
+    sprite.setPosition(col * squareSize + offsetX + offset,
+		row * squareSize + offsetY + offset);
+
+	window.draw(sprite);
+
+}
+
+void PieceRenderer::drawListPromotionPiece(sf::RenderWindow& window, color turn, int col) {
+
+    std::vector<Piece> promotionPieces = (turn == color::white) ?
+        std::vector<Piece>{ Piece::W_Queen, Piece::W_Rook, Piece::W_Bishop, Piece::W_Knight } :
+        std::vector<Piece>{ Piece::B_Queen, Piece::B_Rook, Piece::B_Bishop, Piece::B_Knight };
+
+    for (int i = 0; i < promotionPieces.size(); i++) {
+
+        float rowIndex = (turn == color::white) ? (float)i : (float)(4 + i);
+
+        drawPieceAtPos(window, promotionPieces[i], rowIndex, col);
+    }
+}
+
 void PieceRenderer::renderAll(sf::RenderWindow& window, const Board& board) {
 
-    const auto& drag = game.getState().getDragState();
+    const auto& drag = gameControl->getState().getDragState();
 
     for (int r = 0; r < boardSize; r++) {
         for (int c = 0; c < boardSize; c++) {

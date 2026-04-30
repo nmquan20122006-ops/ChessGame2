@@ -53,12 +53,7 @@ Board_DEBUG::Board_DEBUG(){}
 
 				b.movePiece(from, to);
 
-				b.updateCastleState(fromPiece, from);
 
-				if (targetPiece != Piece::Empty) {
-
-					b.updateCastleStateOnCapture(targetPiece, to);
-				}
 
 				state_Real.switchTurn();
 
@@ -68,7 +63,7 @@ Board_DEBUG::Board_DEBUG(){}
 
 				std::string enPassanString = fenDebugger.enPassantToString(move_Real);
 
-				move_Real.enPassantTarget = enPassanString;
+			
 
 				undoStack.push_back(move_Real);
 
@@ -110,16 +105,10 @@ Board_DEBUG::Board_DEBUG(){}
 			b.setPiece(lastLog.toPos, lastLog.capturedPiece);
 
 			b.updateKingPosition(lastLog.fromPos, p);
-			b.undoCastleState(p, lastLog.fromPos);
-
-			if (lastLog.capturedPiece != Piece::Empty) {
-				b.undoCastleStateOnCapture(lastLog.capturedPiece, lastLog.toPos);
-			}
 
 			std::string enPassantString = fenDebugger.enPassantToString(lastLog);
 
-			move_Real.enPassantTarget = enPassantString;
-
+		
 			state_Real.switchTurn();
 
 		}

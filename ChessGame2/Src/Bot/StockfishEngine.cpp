@@ -1,7 +1,11 @@
-﻿#include "StockfishEngine.h"
+﻿/**
+* 
+*/
 #include <iostream>
 #include <sstream>
 #include <cstring>
+
+#include "StockfishEngine.h"
 
 StockfishEngine::StockfishEngine() : hStdinWrite(NULL), hStdoutRead(NULL) {
     ZeroMemory(&pi, sizeof(pi));
@@ -78,7 +82,8 @@ bool StockfishEngine::isRunning() {
 
 bool StockfishEngine::sendCommand(const std::string& cmd) {
     if (!isRunning()) return false;
-    std::cout << "[SENT TO STOCKFISH]: " << cmd << std::endl;
+    
+    std::cout << "Send to stockfish: " << cmd << std::endl;
 
     std::string fullCmd = cmd + "\n";
     DWORD bytesWritten;
@@ -126,23 +131,20 @@ void StockfishEngine::setPosition(const std::string& fen) {
 
     moveHistory.clear();
 
-    if (fen.empty()) {
+    if (fen.empty()||fen == "startpos") {
         sendCommand("position startpos");
     }
     else {
         sendCommand("position fen " + fen);
     }
+
 }
 
-void StockfishEngine::makeMove(const std::string& uciMove) {
+void StockfishEngine::makeMove(const std::string& currentFen) {
 
-    moveHistory.push_back(uciMove);
+    if (!isRunning())return;
 
-    std::string cmd = "position startpos moves";
-    for (const auto& move : moveHistory) {
-        cmd += " " + move;
-    }
-    sendCommand(cmd);
+    sendCommand("position fen " + currentFen );
 }
 
 std::string StockfishEngine::getBestMove(int movetime) {

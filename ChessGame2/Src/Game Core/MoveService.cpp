@@ -1,5 +1,5 @@
 #include"MoveService.h"
-#include<iostream>
+#include"Board.h"
 
 bool MoveService::isUnderAttack(Position kingPos, color targetColor, const Board& board) {
 
@@ -171,20 +171,22 @@ Move MoveService::createMove(Position fromPos, Position toPos, Board& board) {
 
     move.movedPiece = board.getPiece(fromPos);
     move.capturedPiece = board.getPiece(toPos);
+    move.promotionPiece = Piece::Empty;
 
     if (move.movedPiece == Piece::W_King && std::abs(toPos.col - fromPos.col) == 2) {
-        move.type = MoveType::castle;
+        move.moveType = MoveType::castle;
     }
 
     else if (move.movedPiece == Piece::W_Pawn && fromPos.col != toPos.col && board.getPiece(toPos) == Piece::Empty) {
-        move.type = MoveType::enPassant;
+        move.moveType = MoveType::enPassant;
     }
-
-    else if (move.movedPiece == Piece::W_Pawn && (toPos.row == 7 || toPos.row == 0)) {
-        move.type = MoveType::promotion;
+    //promotion triggered
+    else if (move.movedPiece == Piece::W_Pawn && toPos.row == 0 || move.movedPiece == Piece::B_Pawn && toPos.row == 7) {
+        std::cout << "Promotion triggered! " << std::endl;
+        move.moveType = MoveType::promotion;
     }
     else {
-        move.type = MoveType::normal;
+        move.moveType = MoveType::normal;
     }
 
     return move;

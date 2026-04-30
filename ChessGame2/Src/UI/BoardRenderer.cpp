@@ -1,4 +1,6 @@
 ﻿#include"BoardRenderer.h"
+#include"GameState.h"
+#include"PieceRenderer.h"
 
 BoardRenderer::BoardRenderer() {
 
@@ -64,7 +66,6 @@ void BoardRenderer::initBoardTexture(sf::Texture& texture) {
 	
 	boardSprite.setColor(sf::Color(255, 255, 255, 15));
 	boardSprite.setScale(0.64f, 0.9711f);
-
 
 }
 
@@ -205,4 +206,18 @@ void BoardRenderer::drawCursor(sf::RenderWindow& window,sf::Vector2f worldPos) {
 	cursorSprite.setPosition(worldPos);
 
 	window.draw(cursorSprite);
+}
+
+void BoardRenderer::drawPromotionPanel(sf::RenderWindow& window, color turn, int col) {
+
+	int direction = (turn == color::white) ? 1 : -1;
+
+	sf::RectangleShape promotionPanel(sf::Vector2f(squareSize, squareSize * 4));
+	promotionPanel.setFillColor(sf::Color(255, 255, 255, 170));
+	promotionPanel.setPosition(offset + col * squareSize, offset + (turn == color::white ? 0 : 4 * squareSize));
+	promotionPanel.setOutlineThickness(2.f);
+	promotionPanel.setOutlineColor(sf::Color::Black);
+
+	window.draw(promotionPanel);
+
 }

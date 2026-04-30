@@ -1,4 +1,6 @@
 ﻿#include"AllMoveValid.h"
+#include"MoveValidator.h"
+#include"Board.h"
 
 std::vector<Position>AllValidMove::getPawnAllMoves(Position fromPos, const Board& board) {
 
@@ -205,7 +207,7 @@ std::vector<Position>AllValidMove::getAllValidMoves(Position fromPos, const Boar
 	
 	for (const auto& toPos : rawMoves) {
 
-		if (moveValidator.isMoveLegal(fromPos, toPos, board)) {
+		if (MoveValidator::isMoveLegal(fromPos, toPos, board)) {
 			legalMoves.push_back(toPos);
 		}
 	}
@@ -244,12 +246,12 @@ std::vector<Position> AllValidMove::getKingPhysicalMoves(Position fromPos, const
 	if (fromPos.row == startRow && fromPos.col == 4) {
 
 		// Nhập thành gần (Kingside)
-		if (moveValidator.isCanCastle(fromPos, { startRow, 6 }, board)) {
+		if (MoveValidator::isCanCastle(fromPos, { startRow, 6 }, board)) {
 			moves.push_back({ startRow, 6 });
 		}
 
 		// Nhập thành xa (Queenside)
-		if (moveValidator.isCanCastle(fromPos, { startRow, 2 }, board)) {
+		if (MoveValidator::isCanCastle(fromPos, { startRow, 2 }, board)) {
 			moves.push_back({ startRow, 2 });
 		}
 	}
