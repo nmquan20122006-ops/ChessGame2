@@ -25,9 +25,9 @@ class StockfishGame;
 class GameControl {
 public:
 
-    using MoveEventCallback = std::function<void(const Move& move)>;
-    using StateChangeCallback = std::function<void(GameStatus newState)>;
-    using AnimRequest = std::function<void(Position, Position, Piece, std::function<void()>) >;
+    using MoveEventCallback          = std::function<void(const Move& move)>;
+    using StateChangeCallback        = std::function<void(GameStatus newState)>;
+    using AnimRequest                = std::function<void(Position, Position, Piece, std::function<void()>)>;
 
 private:
 
@@ -43,48 +43,44 @@ private:
     std::vector<MoveEventCallback>      m_onMoveExecutedListeners;
     std::vector<StateChangeCallback>    m_onGameStateChangedListeners;
 
-    void                                updateGameState();
-    void                                notifyMoveExecuted(const Move& move);
-    void                                notifyStateChanged(const GameStatus& newState);
+    void            updateGameState();
+    void            notifyMoveExecuted(const Move& move);
+    void            notifyStateChanged(const GameStatus& newState);
 
 public:
     GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
         std::shared_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me);
     ~GameControl();
+    //====================================================================
+    //request
+    //====================================================================
+    bool             requestAiMove(Position from, Position to, char promoition);
+    bool             requestMove(Position from, Position to);
+    //====================================================================
+    //execute
+    //====================================================================
+    bool             executeAiMove(std::string& uciMove);
+    bool             executePlayerMove(Position from, Position to);
+    bool             executeUndoMove();
+    void             executePromotionMove(Piece selectedPiece);
+    //====================================================================
+    //subscribe listeners
+    //====================================================================
+    void             subscribeToMove(MoveEventCallback callback) { m_onMoveExecutedListeners.push_back(callback); }
+    void             subscribeToStateChange(StateChangeCallback callback) { m_onGameStateChangedListeners.push_back(callback); }
+    void             setAnimationProvider(AnimRequest provider) { animationProvider = provider; }
 
-    void initStockfishGame();
+    //====================================================================
+    //sync
+    //====================================================================
+    void             syncAfterUndo(const UndoEntry& undoEntry);
+    void             finalizeMove(const Move& move);
 
-    bool requestMove(Position from, Position to);
-
-    void subscribeToMove(MoveEventCallback callback) {
-        m_onMoveExecutedListeners.push_back(callback);
-    }
-    void subscribeToStateChange(StateChangeCallback callback) {
-        m_onGameStateChangedListeners.push_back(callback);
-    }
-
-    void setAnimationProvider(AnimRequest provider) { animationProvider = provider; }
-
-    bool executeAiMove(std::string& uciMove);
-    bool executePlayerMove(Position from, Position to);
-    void updateAiMove();
-
-    void syncAfterUndo(const UndoEntry& undoEntry);
-    bool executeUndoMove();
-
-    int halfMoveClockProcess(int prevClock, const Move& move);
-    int fullMoveNumberProcess(int prevClock, const Color currentTurn);
-
-    void preparePromotion(Position fromPos, Position toPos);
-    void executePromotionMove(Piece selectedPiece);
-
-    void finalizeMove(const Move& move);
-    bool requestAiMove(Position from, Position to, char promoition);
-
-    void resetGame();
-
-    GameState& getState() { return *gameState; }
-
-    bool isBlocking()const;
+    void             initStockfishGame();
+    void             updateAiMove();
+    void             preparePromotion(Position fromPos, Position toPos);
+    void             resetGame();
+    GameState&       getState()                                            { return *gameState; }
+    bool             isBlocking()const;
 
 };

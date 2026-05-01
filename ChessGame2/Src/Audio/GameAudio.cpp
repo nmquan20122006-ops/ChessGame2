@@ -1,6 +1,15 @@
 #include"GameAudio.h"
+#include"GameControl.h"
+
+AudioManager::AudioManager(GameControl& g) :gameControl(g) {
+
+    gameControl.subscribeToMove([this](const Move& move) {
+        this->playSound("MoveSound", 100.f, 100.f);
+        });
+}
 
 bool AudioManager::loadSound(const std::string& name, const std::string& filename) {
+
     sf::SoundBuffer buffer;
     if (buffer.loadFromFile(filename)) {
         buffers[name] = buffer;
@@ -10,6 +19,7 @@ bool AudioManager::loadSound(const std::string& name, const std::string& filenam
 }
 
 void AudioManager::playSound(const std::string& name, float volume, float pitch) {
+
     if (buffers.find(name) != buffers.end()) {
         activeSounds.push_back(sf::Sound(buffers[name]));
         sf::Sound& s = activeSounds.back();
@@ -17,6 +27,7 @@ void AudioManager::playSound(const std::string& name, float volume, float pitch)
         s.setVolume(volume);
         s.setPitch(pitch);
         s.play();
+       
     }
 }
 
@@ -42,6 +53,8 @@ void AudioManager::setMusicVolume(float volume) {
 }
 
 void AudioManager::initSound(){
+
+    std::cout << "INIT SOUND CALLED\n";
 
     loadSound("MoveSound", "Assets/Sound/move.wav");
     loadSound("UnValidMoveSound", "Assets/Sound/illegalMove.wav");

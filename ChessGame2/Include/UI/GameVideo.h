@@ -31,7 +31,7 @@ private:
 	std::unique_ptr<GameControl>		gameControl;
 
 	TextureManager						textureManager;
-	AudioManager						audio;
+	std::shared_ptr<AudioManager>		audio;
 
 	BoardRenderer						boardRenderer;
 	PieceRenderer						pieceRender;

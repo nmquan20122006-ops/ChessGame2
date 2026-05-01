@@ -91,6 +91,8 @@ void MoveExecutor::applyMove(Move& move) {
         return;
     }
 
+    recordPrevBoard(move);
+
     board->movePiece(move.fromPos, move.toPos);
 
     if (implementPromotion(move, piece) == MoveType::promotion) {
@@ -99,6 +101,9 @@ void MoveExecutor::applyMove(Move& move) {
         board->updateCastleState(piece, move.fromPos, move.toPos, move.capturedPiece);
         return;
     }
+
+    gameState->halfMoveClockCount = halfMoveClockProcess(gameState->halfMoveClockCount, move);
+    gameState->fullMoveNumberCount = fullMoveNumberProcess(gameState->fullMoveNumberCount, gameState->getCurrentTurn());
 
     board->updateCastleState(piece, move.fromPos, move.toPos, move.capturedPiece);
     move.moveType = MoveType::normal;
@@ -125,11 +130,18 @@ void MoveExecutor::syncAfterUndo(const UndoEntry& undoEntry) {
     gameState->currentFEN = undoEntry.fenBefore;
     gameState->halfMoveClockCount = undoEntry.halfMoveClockCountBefore;
     gameState->fullMoveNumberCount = undoEntry.fullMoveNumberCountBefore;
-
-    //stockfish sync
 }
 
-void MoveExecutor::undoMove(const Move& move) {
+int MoveExecutor::halfMoveClockProcess(int prevClock, const Move& move) {
 
+    if (move.movedPiece == Piece::B_Pawn || move.movedPiece == Piece::W_Pawn || move.capturedPiece != Piece::Empty) {
+        return 0;
+    }
+    return prevClock + 1;
+}
 
+int MoveExecutor::fullMoveNumberProcess(int prevClock, const Color currentTurn) {
+
+    if (currentTurn == Color::black)return prevClock + 1;
+    return prevClock;
 }

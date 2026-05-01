@@ -34,7 +34,6 @@ private:
     bool                            m_isPlayerWhite;
     std::atomic<bool>               m_gameOver;
     std::atomic<bool>               m_aiStartedThinking;
-    std::vector<std::string>        moveHistory;
     std::thread                     aiThread;
     std::mutex                      m_mutex;
 

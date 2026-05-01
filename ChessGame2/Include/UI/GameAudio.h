@@ -3,6 +3,7 @@
 #include <string>
 #include <list>
 
+class GameControl;
 
 class AudioManager {
 private:
@@ -12,13 +13,19 @@ private:
 
     sf::Music backgroundMusic;
 
+    GameControl& gameControl;
+
 public:
+    AudioManager(GameControl& gameControl);
+
     bool loadSound(const std::string& name, const std::string& filename);
 
     void playSound(const std::string& name, float volume = 100.f, float pitch = 1.0f);
 
     bool playMusic(const std::string& filename, bool loop = true);
+
     void stopMusic();
+
     void setMusicVolume(float volume);
 
     void setSoundVolume(float volume);

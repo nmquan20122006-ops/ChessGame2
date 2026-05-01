@@ -17,7 +17,7 @@ GameVideo::GameVideo() :
 	inputHandler =		std::make_unique<InputHandler>(board, state, moveService);
 	gameControl =		std::make_unique<GameControl>(board, state, moveService, moveExecutor);
 	inputController =	std::make_unique<InputController>(*inputHandler, *state, gameControl.get());
-
+	audio =				std::make_shared<AudioManager>(*gameControl);
 	window.setFramerateLimit(144);
 
 	float rightEdge = uiManager.getBoardRightEdgeRatio();
@@ -27,7 +27,6 @@ GameVideo::GameVideo() :
 	informationPanel.updateLayout(leftEdge);
 
 	initAll();
-
 	callBackAll();
 	
 	window.setMouseCursorVisible(false);
@@ -36,9 +35,8 @@ GameVideo::GameVideo() :
 void GameVideo::initAll(){
 
 	textureManager.initTexture();
-	audio.initSound();
+	audio->initSound();
 	loadTextureForMember();
-
 	gameControl->initStockfishGame();
 }
 
@@ -210,6 +208,8 @@ void GameVideo::gameLoop(float dt) {
 	animator.update(dt);
 	
 	gameControl->updateAiMove();
+
+	audio->update();
 
 	renderWindow(window, dt);
 }

@@ -43,7 +43,6 @@ void StockfishGame::newGame(bool playerIsWhite) {
 
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        moveHistory.clear();
         pendingAIMove.clear();
     }
 

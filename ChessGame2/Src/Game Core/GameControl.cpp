@@ -8,7 +8,6 @@
 
 GameControl::GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
 	std::shared_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me) {
-
 	board = b;
 	gameState = s;
 	moveService = ms;
@@ -16,42 +15,26 @@ GameControl::GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
 	
 	stockfishGame = std::make_unique<StockfishGame>(board);
 
-	m_onMoveExecutedListeners.push_back([this](const Move& move) {
-
-		std::string fen = gameState->currentFEN;
-		this->stockfishGame->syncMove(fen);
-
+	subscribeToMove([this](const Move& move) {
+		stockfishGame->syncMove(gameState->getCurrentFEN());
 		});
 }
 
 GameControl::~GameControl() = default;
 
 bool GameControl::requestMove(Position from, Position to) {
-
 	//---before move
-
 	if (!moveService->isValidMove(from, to, *board)) return false;
-
 	//create move object
 	Move move = moveService->createMove(from, to, *board);
 
 	if (move.moveType == MoveType::promotion) {
-
 		preparePromotion(from, to);
-
 		return true;
 	}
-	//normal move
 	else {
-
-		//record the state before move for undo functionality
-		moveExecutor->recordPrevBoard(move);
-
-		//---after move
 		moveExecutor->applyMove(move);
-
 		finalizeMove(move);
-
 		return true;
 	}
 }
@@ -104,16 +87,11 @@ void GameControl::executePromotionMove(Piece selectedPiece) {
 }
 
 void GameControl::finalizeMove(const Move& move) {
-	//update half move clock and full move number
-	gameState->halfMoveClockCount = halfMoveClockProcess(gameState->halfMoveClockCount, move);
-	gameState->fullMoveNumberCount = fullMoveNumberProcess(gameState->fullMoveNumberCount, gameState->getCurrentTurn());
-
 	//update game state (check, checkmate, turn switch)
 	updateGameState();
-
 	//update FEN
 	gameState->currentFEN = ToFEN::FullFEN(*board, move, *gameState);
-
+	//notify all the listeners
 	notifyMoveExecuted(move);
 }
 
@@ -282,20 +260,6 @@ bool GameControl::executeUndoMove() {
 		gameState->setAnimating(false);
 	}
 	return true;
-}
-
-int GameControl::halfMoveClockProcess(int prevClock, const Move& move) {
-
-	if (move.movedPiece == Piece::B_Pawn || move.movedPiece == Piece::W_Pawn || move.capturedPiece != Piece::Empty) {
-		return 0;
-	}
-	return prevClock + 1;
-}
-
-int GameControl::fullMoveNumberProcess(int prevClock, const Color currentTurn) {
-
-	if (currentTurn == Color::black)return prevClock + 1;
-	return prevClock;
 }
 
 void GameControl::resetGame() {

@@ -16,28 +16,22 @@ class Board;
 
 class MoveExecutor {
 private:
-
 	std::shared_ptr<Board> board;
 	std::shared_ptr<GameState>gameState;
 
 	MoveType moveType = MoveType::none;
 
-	MoveType implementCastle(Move& move, Piece& piece);
-
-	MoveType implementPromotion(Move& move, Piece& piece);
-
-	MoveType implementEnPassant(Move& move, Piece& piece);
-
+	MoveType	implementCastle(Move& move, Piece& piece);
+	MoveType	implementPromotion(Move& move, Piece& piece);
+	MoveType	implementEnPassant(Move& move, Piece& piece);
 
 public:
-
 	MoveExecutor(std::shared_ptr<Board> b, std::shared_ptr<GameState> g);
 
-	void applyMove(Move& move);
+	void		applyMove(Move& move);
+	void		recordPrevBoard(const Move& moveBefore);
+	void		syncAfterUndo(const UndoEntry& undoEntry);
 
-	void recordPrevBoard(const Move& moveBefore);
-
-	void syncAfterUndo(const UndoEntry& undoEntry);
-
-	void undoMove(const Move& move);
+	int			halfMoveClockProcess(int prevClock, const Move& move);
+	int			fullMoveNumberProcess(int prevClock, const Color currentTurn);
 };
