@@ -1,4 +1,4 @@
-#include"BoardToFEN_Test.h"
+/*#include"BoardToFEN_Test.h"
 
 BoardToFEN_DEBUG::BoardToFEN_DEBUG() {
 	board_Real.initBoard();
@@ -24,22 +24,22 @@ char BoardToFEN_DEBUG::pieceToChar(Piece piece) {
 	}
 }
 
-std::string BoardToFEN_DEBUG::turnToString(color color) {
+std::string BoardToFEN_DEBUG::turnToString(Color Color) {
 
-	switch (color) {
-	case(color::black):return "black";
-	case(color::white):return "white";
-	case(color::none):
+	switch (Color) {
+	case(Color::black):return "black";
+	case(Color::white):return "white";
+	case(Color::none):
 	default: return "none";
 	}
 }
 
-char BoardToFEN_DEBUG::turnToChar(color turn) {
+char BoardToFEN_DEBUG::turnToChar(Color turn) {
 
 	switch (turn) {
-	case(color::black):return 'b';
-	case(color::white):return 'w';
-	case(color::none):
+	case(Color::black):return 'b';
+	case(Color::white):return 'w';
+	case(Color::none):
 	default: return 'n';
 	}
 }
@@ -166,4 +166,4 @@ std::string BoardToFEN_DEBUG::toFEN(Board& b,GameState& state_Real,Move& move) {
 
 	std::cout << fen << std::endl;
 	return fen;
-}
+}*/

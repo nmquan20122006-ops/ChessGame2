@@ -1,9 +1,9 @@
 #include"MoveService.h"
 #include"Board.h"
 
-bool MoveService::isUnderAttack(Position kingPos, color targetColor, const Board& board) {
+bool MoveService::isUnderAttack(Position kingPos, Color targetColor, const Board& board) {
 
-    bool isWhiteTarget = (targetColor == color::white);
+    bool isWhiteTarget = (targetColor == Color::white);
 
     // ===== KNIGHT =====
     const int knightDir[8][2] = {
@@ -115,16 +115,16 @@ bool MoveService::isUnderAttack(Position kingPos, color targetColor, const Board
     return false;
 }
 
-bool MoveService::Check(const Board& board, color turn) {
+bool MoveService::Check(const Board& board, Color turn) {
 
-    Position kingPos = board.findKing(turn==color::white);
+    Position kingPos = board.findKing(turn==Color::white);
 
     return isUnderAttack(kingPos, turn, board);
 }
 
-bool MoveService::CheckMate(const Board& board, color turn) {
+bool MoveService::CheckMate(const Board& board, Color turn) {
 
-    Position kingPos = board.findKing(turn == color::white);
+    Position kingPos = board.findKing(turn == Color::white);
 
     Piece king = board.getPiece(kingPos);
 

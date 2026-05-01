@@ -1,6 +1,6 @@
 #include"Utility.h"
 #include"Board.h"
-#include"GameState.h"
+#include"State/GameState.hpp"
 
 Position::Position(int row, int col) :row(row), col(col) {};
 

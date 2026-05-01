@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include<iostream>
-#include<SFML/Graphics.hpp>
+#include<SFML/System/Vector2.hpp>
 #include"Constants.h"
 
 class GameState;

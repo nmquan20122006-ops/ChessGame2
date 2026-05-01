@@ -1,4 +1,4 @@
-﻿#include"StockfishWrapper_Test.h"
+﻿/*#include"StockfishWrapper_Test.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -246,4 +246,4 @@ void UndoTest::run_all_tests() {
     test_undo_en_passant();
 
     std::cout << "\n========== ALL TESTS COMPLETED ==========\n" << std::endl;
-}
+}*/

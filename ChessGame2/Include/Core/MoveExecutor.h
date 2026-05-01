@@ -9,14 +9,14 @@
 * This game is developed for educational purposes and is not intended for commercial use.
 */
 #pragma once
-#include"GameState.h"
+#include"State/GameState.hpp"
 #include<memory.h>
 
 class Board;
 
 class MoveExecutor {
-private: 
-	
+private:
+
 	std::shared_ptr<Board> board;
 	std::shared_ptr<GameState>gameState;
 
@@ -30,14 +30,14 @@ private:
 
 
 public:
-	
-	MoveExecutor(std::shared_ptr<Board> b,std::shared_ptr<GameState> g);
+
+	MoveExecutor(std::shared_ptr<Board> b, std::shared_ptr<GameState> g);
 
 	void applyMove(Move& move);
 
 	void recordPrevBoard(const Move& moveBefore);
 
 	void syncAfterUndo(const UndoEntry& undoEntry);
-	
+
 	void undoMove(const Move& move);
 };

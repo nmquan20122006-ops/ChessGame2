@@ -32,7 +32,7 @@ file(GLOB_RECURSE CORE_SOURCES
 file(GLOB GAME_CORE_SOURCES "Src/Game Core/*.cpp")
 list(APPEND CORE_SOURCES ${GAME_CORE_SOURCES})
 
-add_library(core ${CORE_SOURCES} "Test/Include/Undo_Test.h"  "Test/Src/Undo_Test.cpp" "Test/Src/BoardToFEN_Test.cpp" "Include/Core/ToFEN.h" "Src/Game Core/ToFEN.cpp")
+add_library(core ${CORE_SOURCES} "Test/Include/Undo_Test.h"  "Test/Src/Undo_Test.cpp" "Test/Src/BoardToFEN_Test.cpp" "Include/Core/ToFEN.h" "Src/Game Core/ToFEN.cpp" "Include/Core/State/UiState.hpp" "Include/Core/InputHandler.h" "Src/Input/InputHandler.cpp" "Include/Core/ChessEngineInterface.h")
 
 target_link_libraries(core
     sfml-graphics
@@ -46,7 +46,7 @@ target_link_libraries(core
 add_executable(game
     Src/main/main.cpp
     Src/main/GameVideo.cpp
- "Test/Include/Undo_Test.h"  "Test/Src/Undo_Test.cpp" "Test/Src/BoardToFEN_Test.cpp" "Include/Core/ToFEN.h" "Src/Game Core/ToFEN.cpp")
+ "Test/Include/Undo_Test.h"  "Test/Src/Undo_Test.cpp" "Test/Src/BoardToFEN_Test.cpp" "Include/Core/ToFEN.h" "Src/Game Core/ToFEN.cpp" "Include/Core/State/UiState.hpp" "Include/Core/InputHandler.h" "Src/Input/InputHandler.cpp" "Include/Core/ChessEngineInterface.h")
 
 target_link_libraries(game
     core
@@ -62,7 +62,7 @@ file(GLOB_RECURSE TEST_SOURCES
     "Test/Src/*.cpp"
 )
 
-add_executable(test_runner ${TEST_SOURCES} "Test/Include/Undo_Test.h"  "Test/Src/Undo_Test.cpp" "Test/Src/BoardToFEN_Test.cpp" "Include/Core/ToFEN.h" "Src/Game Core/ToFEN.cpp")
+add_executable(test_runner ${TEST_SOURCES} "Test/Include/Undo_Test.h"  "Test/Src/Undo_Test.cpp" "Test/Src/BoardToFEN_Test.cpp" "Include/Core/ToFEN.h" "Src/Game Core/ToFEN.cpp" "Include/Core/State/UiState.hpp" "Include/Core/InputHandler.h" "Src/Input/InputHandler.cpp" "Include/Core/ChessEngineInterface.h")
 
 target_link_libraries(test_runner
     core

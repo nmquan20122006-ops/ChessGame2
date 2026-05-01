@@ -14,35 +14,37 @@
 #include"UIManager.h"
 #include"AnalysisPanel.h"
 #include"InformationPanel.h"
+#include"InputHandler.h"
 
 class GameVideo {
 
 private:
-	std::shared_ptr<Board> board;
-	std::shared_ptr<GameState> state;
+	std::shared_ptr<Board>				board;
+	std::shared_ptr<GameState>			state;
 
-	std::unique_ptr<MoveExecutor> moveExecutor;
-	std::unique_ptr<MoveService> moveService;
-	std::unique_ptr<StockfishGame> stockfishGame;
-	std::unique_ptr<DumpBot> dumpBot;
+	std::unique_ptr<MoveExecutor>		moveExecutor;
+	std::shared_ptr<MoveService>		moveService;
+	std::unique_ptr<StockfishGame>		stockfishGame;
+	std::unique_ptr<DumpBot>			dumpBot;
+	std::unique_ptr<InputHandler>		inputHandler;
 
-	std::unique_ptr<GameControl> gameControl;
+	std::unique_ptr<GameControl>		gameControl;
 
-	TextureManager textureManager;
-	AudioManager audio;
+	TextureManager						textureManager;
+	AudioManager						audio;
 
-	BoardRenderer boardRenderer;
-	PieceRenderer pieceRender;
-	InputController inputController;
+	BoardRenderer						boardRenderer;
+	PieceRenderer						pieceRender;
+	std::shared_ptr<InputController>	inputController;
 
-	sf::RenderWindow window;
-	tgui::GuiSFML gui;
-	TweenyAnimator animator;
-	sf::Clock clock;
+	sf::RenderWindow					window;
+	tgui::GuiSFML						gui;
+	TweenyAnimator						animator;
+	sf::Clock							clock;
 
-	UIManager uiManager;
-	AnalysisPanel analysisPanel;
-	InformationPanel informationPanel;
+	UIManager							uiManager;
+	AnalysisPanel						analysisPanel;
+	InformationPanel					informationPanel;
 	
 	sf::Vector2u windowSize = { windowWidth,windowHeight };
 
@@ -72,6 +74,10 @@ public:
 	void renderPromotionPanel(sf::RenderWindow& window);
 
 	void changeCursor(sf::RenderWindow& window);
+
+	void initAll();
+
+	void callBackAll();
 
 	void loadTextureForMember();
 

@@ -7,16 +7,14 @@
 #include "ToFEN.h"
 
 GameControl::GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
-	std::unique_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me) {
+	std::shared_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me) {
 
 	board = b;
 	gameState = s;
-	moveService = std::move(ms);
+	moveService = ms;
 	moveExecutor = std::move(me);
 	
 	stockfishGame = std::make_unique<StockfishGame>(board);
-
-	m_isAnimating = gameState->isAnimating;
 
 	m_onMoveExecutedListeners.push_back([this](const Move& move) {
 
@@ -25,6 +23,8 @@ GameControl::GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
 
 		});
 }
+
+GameControl::~GameControl() = default;
 
 bool GameControl::requestMove(Position from, Position to) {
 
@@ -70,6 +70,8 @@ bool GameControl::requestAiMove(Position from, Position to, char promotionChar) 
 	moveExecutor->applyMove(move);
 
 	finalizeMove(move);
+
+	return true;
 }
 
 void GameControl::preparePromotion(Position fromPos, Position toPos) {
@@ -77,7 +79,7 @@ void GameControl::preparePromotion(Position fromPos, Position toPos) {
 	gameState->pendingFrom = fromPos;
 	gameState->pendingTo = toPos;
 
-	gameState->gameStateEnum = GameStateEnum::waitingForPromotion;
+	gameState->gameStatus = GameStatus::WaitingForPromotion;
 }
 
 void GameControl::executePromotionMove(Piece selectedPiece) {
@@ -96,7 +98,7 @@ void GameControl::executePromotionMove(Piece selectedPiece) {
 
 	updateGameState();
 
-	gameState->gameStateEnum = GameStateEnum::normal;
+	gameState->gameStatus = GameStatus::Normal;
 	gameState->pendingFrom = { -1, -1 };
 	gameState->pendingTo = { -1, -1 };
 }
@@ -104,7 +106,7 @@ void GameControl::executePromotionMove(Piece selectedPiece) {
 void GameControl::finalizeMove(const Move& move) {
 	//update half move clock and full move number
 	gameState->halfMoveClockCount = halfMoveClockProcess(gameState->halfMoveClockCount, move);
-	gameState->fullMoveNumberCount = fullMoveNumberProcess(gameState->fullMoveNumberCount, gameState->currentTurn);
+	gameState->fullMoveNumberCount = fullMoveNumberProcess(gameState->fullMoveNumberCount, gameState->getCurrentTurn());
 
 	//update game state (check, checkmate, turn switch)
 	updateGameState();
@@ -119,7 +121,7 @@ bool GameControl::executePlayerMove(Position from, Position to) {
 
 	if (animationProvider) {
 
-		m_isAnimating = true;
+		gameState->setAnimating(true);
 
 		Piece piece = board->getPiece(from);
 
@@ -127,141 +129,15 @@ bool GameControl::executePlayerMove(Position from, Position to) {
 
 			this->requestMove(from, to);
 
-			m_isAnimating = false;
+			gameState->setAnimating(false);
 			});
 	}
 	else {
 		this->requestMove(from, to);
+		gameState->setAnimating(false);
 	}
 
 	return true;
-}
-
-void GameControl::handleSquareSelection(Position pos) {
-
-	if (stockfishGame->isThinking())return;
-
-	if (!board->isInside(pos))return;
-
-	if (!gameState->isSelected) {
-
-		Piece p = board->getPiece(pos);
-		color pieceColor = gameState->getColor(p);
-
-		if (pieceColor == gameState->currentTurn) {
-
-			gameState->setSelectPos(pos);
-			gameState->setValidMoves(moveService->getValidMoves(pos, *board));
-
-			gameState->isSelected = true;
-			return;
-		}
-		
-	}
-
-	else {
-
-		Piece p = board->getPiece(pos);
-		color pieceColor = gameState->getColor(p);
-
-		if (pos == gameState->getSelectPos()) {
-
-			deselect();
-
-		}
-
-		else if (p != Piece::Empty && pieceColor == gameState->currentTurn) {
-
-			gameState->setSelectPos(pos);
-
-			gameState->setValidMoves(moveService->getValidMoves(pos, *board));
-
-		}
-
-		else if (gameState->isPosInVector(pos)) {
-
-			Position from = gameState->getSelectPos();
-			Position to = pos;
-
-			this->executePlayerMove(from, to);
-
-			deselect();
-		}
-
-		else {
-
-			deselect();
-
-		}
-	}
-}
-
-void GameControl::handlePress(Position pos, sf::Vector2f mousePos) {
-
-	if (stockfishGame->isThinking())return;
-
-	if (!board->isInside(pos))return;
-	
-	Piece p = board->getPiece(pos);
-	color pieceColor = gameState->getColor(p);
-
-	gameState->drag.isActive = true;
-	gameState->drag.mousePosition = mousePos;
-
-	if (p != Piece::Empty && pieceColor == gameState->currentTurn) {
-
-		gameState->drag.draggingPiece = p;
-		gameState->drag.isDragging = true;
-		gameState->drag.fromPos = pos;
-		gameState->drag.isActive = true;
-
-	}
-
-	else {
-
-		gameState->drag.isDragging = false;
-	}
-
-}
-
-void GameControl::handleMove(sf::Vector2f mousePos) {
-
-	if (gameState->drag.isActive) {
-
-		gameState->drag.mousePosition = mousePos;
-	}
-	
-}
-
-void GameControl::handleRelease(Position toPos) {
-
-	if (!board->isInside(toPos))return;
-	if (isBlocking()) return;
-
-	gameState->drag.isActive = false;
-
-	Position from = gameState->drag.fromPos;
-
-	if (from != toPos) {
-
-		if (gameState->hasSelection()&&from==gameState->selectedPos) {
-
-			if (gameState->isPosInVector(toPos)) {
-
-				requestMove(from, toPos);
-
-				gameState->drag.reset();
-				deselect();
-			}
-			else {
-
-				deselect();
-			}
-			
-		}
-	}
-
-	gameState->drag.reset();
 }
 
 void GameControl::notifyMoveExecuted(const Move& move) {
@@ -274,7 +150,7 @@ void GameControl::notifyMoveExecuted(const Move& move) {
 	}
 }
 
-void GameControl::notifyStateChanged(const GameStateEnum& newState) {
+void GameControl::notifyStateChanged(const GameStatus& newState) {
 
 	for (auto& callBack : m_onGameStateChangedListeners) {
 
@@ -292,7 +168,7 @@ void GameControl::updateGameState() {
 
 	gameState->isCheck = moveService->Check(*board, Turn);
 
-	if (gameState->isCheck)gameState->checkPos = board->findKing(Turn==color::white);
+	if (gameState->isCheck)gameState->checkPos = board->findKing(Turn==Color::white);
 
 	gameState->isCheckMate = moveService->CheckMate(*board, Turn);
 }
@@ -305,7 +181,7 @@ void GameControl::initStockfishGame() {
 	stockfishGame->newGame(true);
 
 	gameState->setAiState().isAiEnabled = true;
-	gameState->setAiState().aiTurn = color::black;
+	gameState->setAiState().aiTurn = Color::black;
 
 	gameState->setDualMode(false);
 }
@@ -321,7 +197,7 @@ bool GameControl::executeAiMove(std::string& uciMove) {
 
 	Piece piece = board->getPiece(from);
 
-	m_isAnimating = true;
+	gameState->setAnimating(true);
 	
 	if (animationProvider) {
 
@@ -329,7 +205,7 @@ bool GameControl::executeAiMove(std::string& uciMove) {
 
 			this->requestAiMove(from, to, promotionChar);
 
-			m_isAnimating = false;
+			gameState->setAnimating(false);
 
 			});
 	}
@@ -337,7 +213,7 @@ bool GameControl::executeAiMove(std::string& uciMove) {
 
 		this->requestAiMove(from, to, promotionChar);
 
-		m_isAnimating = false;
+		gameState->setAnimating(false);
 
 	}
 	return true;
@@ -345,7 +221,7 @@ bool GameControl::executeAiMove(std::string& uciMove) {
 
 void GameControl::updateAiMove() {
 
-	color currentTurn = gameState->currentTurn;
+	Color currentTurn = gameState->currentTurn;
 	auto& ai = gameState->getAiState();
 
 	if (!ai.isAiEnabled || currentTurn != ai.aiTurn) return;
@@ -360,7 +236,7 @@ void GameControl::updateAiMove() {
 	}
 	else{
 
-		stockfishGame->startThinking(1500);
+		stockfishGame->startThinking(2000);
 	}
 }
 
@@ -374,9 +250,9 @@ void GameControl::syncAfterUndo(const UndoEntry& undoEntry) {
 
 bool GameControl::executeUndoMove() {
 
-	if (gameState->undoStack.empty() || m_isAnimating)return false;
+	if (gameState->undoStack.empty() || gameState->getAnimating() == true)return false;
 
-	m_isAnimating = true;
+	gameState->setAnimating(true);
 
 	UndoEntry lastEntry = gameState->undoStack.back();
 	gameState->undoStack.pop_back();
@@ -390,7 +266,7 @@ bool GameControl::executeUndoMove() {
 			
 			this->syncAfterUndo(lastEntry);
 			
-			this->m_isAnimating = false;
+			gameState->setAnimating(false);
 
 			if (gameState->getAiState().isAiEnabled && gameState->currentTurn == gameState->getAiState().aiTurn) {
 				this->executeUndoMove();
@@ -403,7 +279,7 @@ bool GameControl::executeUndoMove() {
 		if (gameState->getAiState().isAiEnabled && gameState->currentTurn == gameState->getAiState().aiTurn) {
 			this->executeUndoMove();
 		}
-		this->m_isAnimating = false;
+		gameState->setAnimating(false);
 	}
 	return true;
 }
@@ -416,9 +292,9 @@ int GameControl::halfMoveClockProcess(int prevClock, const Move& move) {
 	return prevClock + 1;
 }
 
-int GameControl::fullMoveNumberProcess(int prevClock, const color currentTurn) {
+int GameControl::fullMoveNumberProcess(int prevClock, const Color currentTurn) {
 
-	if (currentTurn == color::black)return prevClock + 1;
+	if (currentTurn == Color::black)return prevClock + 1;
 	return prevClock;
 }
 
@@ -436,5 +312,5 @@ void GameControl::resetGame() {
 
 bool GameControl::isBlocking()const {
 
-	return stockfishGame->isThinking() || m_isAnimating || m_isUndoing;
+	return stockfishGame->isThinking() || gameState->getAnimating() == true;
 }

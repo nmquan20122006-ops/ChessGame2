@@ -13,7 +13,7 @@
 #include <vector>
 #include <memory>
 
-#include"GameState.h"
+#include"State/GameState.hpp"
 #include"Utility.h"
 #include"Bot.h"
 
@@ -21,54 +21,40 @@ class Board;
 class MoveExecutor;
 class MoveService;
 class StockfishGame;
-class DumpBot;
 
 class GameControl {
 public:
 
     using MoveEventCallback = std::function<void(const Move& move)>;
-    using StateChangeCallback = std::function<void(GameStateEnum newState)>;
-    using AnimRequest = std::function<void(Position, Position,Piece, std::function<void()>) >;
-    
+    using StateChangeCallback = std::function<void(GameStatus newState)>;
+    using AnimRequest = std::function<void(Position, Position, Piece, std::function<void()>) >;
+
 private:
 
-    std::shared_ptr<Board>board;
-    std::unique_ptr<MoveExecutor>moveExecutor;
-    std::unique_ptr<MoveService>moveService;
-    std::shared_ptr<GameState>gameState;
-    std::unique_ptr<StockfishGame>stockfishGame;
-    std::unique_ptr<DumpBot>dumpBot;
+    std::shared_ptr<Board>              board;
+    std::unique_ptr<MoveExecutor>       moveExecutor;
+    std::shared_ptr<MoveService>        moveService;
+    std::shared_ptr<GameState>          gameState;
+    std::unique_ptr<StockfishGame>      stockfishGame;
+    std::unique_ptr<DumpBot>            dumpBot;
 
-    AnimRequest animationProvider = nullptr;
-    
-    std::vector<MoveEventCallback> m_onMoveExecutedListeners;
-    std::vector<StateChangeCallback> m_onGameStateChangedListeners;
+    AnimRequest                         animationProvider = nullptr;
 
-    void deselect() { gameState->clearSelection(); }
+    std::vector<MoveEventCallback>      m_onMoveExecutedListeners;
+    std::vector<StateChangeCallback>    m_onGameStateChangedListeners;
 
-    void updateGameState();
-    void notifyMoveExecuted(const Move& move);
-    void notifyStateChanged(const GameStateEnum& newState);
-
-    bool m_isAnimating = false;
-    bool m_isUndoing = false;
+    void                                updateGameState();
+    void                                notifyMoveExecuted(const Move& move);
+    void                                notifyStateChanged(const GameStatus& newState);
 
 public:
     GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
-        std::unique_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me);
-    ~GameControl() = default;
-
-    MoveExecutor* getMoveExecutor_ptr() { return moveExecutor.get(); }
-    StockfishGame* getStockfishGame_ptr() { return stockfishGame.get(); }
+        std::shared_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me);
+    ~GameControl();
 
     void initStockfishGame();
 
     bool requestMove(Position from, Position to);
-
-    void handleSquareSelection(Position pos);
-    void handlePress(Position, sf::Vector2f mousePos);
-    void handleMove(sf::Vector2f mousePos);
-    void handleRelease(Position pos);
 
     void subscribeToMove(MoveEventCallback callback) {
         m_onMoveExecutedListeners.push_back(callback);
@@ -87,13 +73,13 @@ public:
     bool executeUndoMove();
 
     int halfMoveClockProcess(int prevClock, const Move& move);
-    int fullMoveNumberProcess(int prevClock, const color currentTurn);
+    int fullMoveNumberProcess(int prevClock, const Color currentTurn);
 
-	void preparePromotion(Position fromPos, Position toPos);
+    void preparePromotion(Position fromPos, Position toPos);
     void executePromotionMove(Piece selectedPiece);
 
     void finalizeMove(const Move& move);
-    bool requestAiMove(Position from,Position to,char promoition);
+    bool requestAiMove(Position from, Position to, char promoition);
 
     void resetGame();
 

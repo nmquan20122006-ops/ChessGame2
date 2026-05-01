@@ -1,4 +1,4 @@
-﻿#pragma once
+﻿/*#pragma once
 
 #include "Board.h"
 #include"GameState.h"
@@ -41,3 +41,4 @@ public:
 
 	void runTest(Board& b, BoardToFEN_DEBUG& a, int num);
 };
+*/

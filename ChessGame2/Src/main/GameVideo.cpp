@@ -2,19 +2,21 @@
 #include<iostream>
 
 GameVideo::GameVideo() :
-	window(sf::VideoMode(windowWidth, windowHeight), "Chess"), gui(window), 
-	analysisPanel(gui), informationPanel(gui), uiManager(windowSize, analysisPanel) {
+	window				(sf::VideoMode(windowWidth, windowHeight), "Chess"),
+	gui					(window),
+	analysisPanel		(gui),
+	informationPanel	(gui),
+	board				(std::make_shared<Board>()),
+	state				(std::make_shared<GameState>()),
+	moveService			(std::make_shared<MoveService>()),
+	uiManager			(windowSize, analysisPanel),
+	pieceRender			(state)
+	{
 
-	board = std::make_shared<Board>();
-	state = std::make_shared<GameState>();
-
-	moveService = std::make_unique<MoveService>();
-	moveExecutor = std::make_unique<MoveExecutor>(board,state);
-
-	gameControl = std::make_unique<GameControl>(board, state, moveService, moveExecutor);
-
-	pieceRender.setTarget(gameControl.get());
-	inputController.setTarget(gameControl.get());
+	moveExecutor =		std::make_unique<MoveExecutor>(board,state);
+	inputHandler =		std::make_unique<InputHandler>(board, state, moveService);
+	gameControl =		std::make_unique<GameControl>(board, state, moveService, moveExecutor);
+	inputController =	std::make_unique<InputController>(*inputHandler, *state, gameControl.get());
 
 	window.setFramerateLimit(144);
 
@@ -24,12 +26,32 @@ GameVideo::GameVideo() :
 	analysisPanel.updateLayout(rightEdge);
 	informationPanel.updateLayout(leftEdge);
 
+	initAll();
+
+	callBackAll();
+	
+	window.setMouseCursorVisible(false);
+	}
+
+void GameVideo::initAll(){
+
 	textureManager.initTexture();
 	audio.initSound();
 	loadTextureForMember();
 
 	gameControl->initStockfishGame();
+}
 
+void GameVideo::callBackAll() {
+	inputHandler->setOnClickMove([this](Position from, Position to) {
+		gameControl->executePlayerMove(from, to);
+		});
+	inputHandler->setOnDragMove([this](Position from, Position to) {
+		gameControl->requestMove(from, to);
+		});
+	inputHandler->setIsBlock([this]()->bool {
+		return gameControl->isBlocking();
+		});
 	gameControl->setAnimationProvider([this](Position from, Position to, Piece piece, std::function<void()> onComplete) {
 
 		if (piece == Piece::Empty) {
@@ -44,15 +66,15 @@ GameVideo::GameVideo() :
 		sf::Vector2f start = toPixel(from);
 		sf::Vector2f end = toPixel(to);
 
-		this->animator.addMove(pieceSprite, start, end, 70, [this, from, to, onComplete]() {
+		this->animator.addMove(pieceSprite, start, end, 120, [this, from, to, onComplete]() {
 
 			this->pieceRender.includePosition(from);
 
 			if (onComplete) onComplete();
 			});
 		});
-	
-	window.setMouseCursorVisible(false);
+
+
 }
 
 void GameVideo::renderWindow(sf::RenderWindow& window,float dt) {
@@ -130,7 +152,7 @@ void GameVideo::renderHighlightLastMove(sf::RenderWindow& window) {
 
 void GameVideo::renderBoardHover(sf::RenderWindow& window) {
 
-	Position hoverPos = inputController.getMouseHoverPosition(window,boardView);
+	Position hoverPos = inputController->getMouseHoverPosition(window,boardView);
 
 	boardRenderer.drawHover(window, hoverPos);
 }
@@ -177,7 +199,7 @@ void GameVideo::changeCursor(sf::RenderWindow& window) {
 
 void GameVideo::renderPromotionPanel(sf::RenderWindow& window) {
 
-	if (state->getGameStateEnum() != GameStateEnum::waitingForPromotion) return;
+	if (state->getGameStatus() != GameStatus::WaitingForPromotion) return;
 
 	boardRenderer.drawPromotionPanel(window, state->getCurrentTurn(), state->getPendingTo().col);
 	pieceRender.drawListPromotionPiece(window, state->getCurrentTurn(), state->getPendingTo().col);
@@ -210,7 +232,7 @@ void GameVideo::updateEvent(sf::Event e) {
 
 	}
 
-	inputController.handleEvent(window, e, boardView);
+	inputController->handleEvent(window, e, boardView);
 }
 
 void GameVideo::Run() {

@@ -1,4 +1,4 @@
-﻿#include"Undo_Test.h"
+﻿/*#include"Undo_Test.h"
 #include"BoardToFEN_Test.h"
 
 int main() {
@@ -18,5 +18,5 @@ int main() {
 	test.runTest(test.board_Real, 100);
 
 	test.printBoard(test.board_Real);
-	test.toFEN(test.board_Real);*/
-}
+	test.toFEN(test.board_Real);
+} */

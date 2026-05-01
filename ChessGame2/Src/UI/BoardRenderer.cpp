@@ -1,5 +1,5 @@
 ﻿#include"BoardRenderer.h"
-#include"GameState.h"
+#include"State/GameState.hpp"
 #include"PieceRenderer.h"
 
 BoardRenderer::BoardRenderer() {
@@ -48,13 +48,13 @@ void BoardRenderer::draw(sf::RenderWindow& window) {
 	window.draw(boardSprite);
 }
 
-void BoardRenderer::drawHighlight(sf::RenderWindow& window,Position pos ,sf::Color color) {
+void BoardRenderer::drawHighlight(sf::RenderWindow& window,Position pos ,sf::Color Color) {
 
 	hightlightSquare.setSize(sf::Vector2f(squareSize, squareSize));
 
 	hightlightSquare.setPosition(pos.col * squareSize + offset, pos.row * squareSize + offset);
 
-	hightlightSquare.setFillColor(color);
+	hightlightSquare.setFillColor(Color);
 
 	window.draw(hightlightSquare);
 }
@@ -208,13 +208,13 @@ void BoardRenderer::drawCursor(sf::RenderWindow& window,sf::Vector2f worldPos) {
 	window.draw(cursorSprite);
 }
 
-void BoardRenderer::drawPromotionPanel(sf::RenderWindow& window, color turn, int col) {
+void BoardRenderer::drawPromotionPanel(sf::RenderWindow& window, Color turn, int col) {
 
-	int direction = (turn == color::white) ? 1 : -1;
+	int direction = (turn == Color::white) ? 1 : -1;
 
 	sf::RectangleShape promotionPanel(sf::Vector2f(squareSize, squareSize * 4));
 	promotionPanel.setFillColor(sf::Color(255, 255, 255, 170));
-	promotionPanel.setPosition(offset + col * squareSize, offset + (turn == color::white ? 0 : 4 * squareSize));
+	promotionPanel.setPosition(offset + col * squareSize, offset + (turn == Color::white ? 0 : 4 * squareSize));
 	promotionPanel.setOutlineThickness(2.f);
 	promotionPanel.setOutlineColor(sf::Color::Black);
 

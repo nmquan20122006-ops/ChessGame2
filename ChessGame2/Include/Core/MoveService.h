@@ -13,7 +13,7 @@
 #pragma once
 #include"AllMoveValid.h"
 #include"MoveValidator.h"
-#include"GameState.h"
+#include"State/GameState.hpp"
 
 class Board;
 
@@ -23,10 +23,10 @@ private:
 
 	AllValidMove generator;
 
-	bool isUnderAttack(Position pos, color target, const Board& board);
+	bool isUnderAttack(Position pos, Color target, const Board& board);
 
 public:
-	
+
 	std::vector<Position>getValidMoves(Position fromPos, const Board& board) {
 		return generator.getAllValidMoves(fromPos, board);
 	}
@@ -35,8 +35,8 @@ public:
 		return MoveValidator::isCanExecuteMove(fromPos, toPos, board);
 	}
 
-	bool Check(const Board& board, color turn);
-	bool CheckMate(const Board& board, color turn);
+	bool Check(const Board& board, Color turn);
+	bool CheckMate(const Board& board, Color turn);
 
 	Move createMove(Position from, Position to, Board& board);
 

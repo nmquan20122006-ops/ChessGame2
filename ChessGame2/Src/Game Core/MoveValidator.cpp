@@ -61,7 +61,7 @@ bool MoveValidator::checkPawn(Position fromPos, Position toPos, const Board& cla
 	//overridde other piece
 	else if (colDiff == 1 && toPos.row == nextMoveRow) {
 
-		//want override an other piece you need toPos isn't empty and they's color is opposite!
+		//want override an other piece you need toPos isn't empty and they's Color is opposite!
 
 		return targetPiece !=Piece::Empty && isOpponent(pawn, targetPiece);
 	}

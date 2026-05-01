@@ -18,65 +18,53 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
+#include <memory>
 
 #include "StockfishEngine.h"
 #include "MoveExecutor.h"
 #include "Board.h"
+class Board;
 
 class StockfishGame {
 
 private:
-    
-    std::shared_ptr<Board> board;
+  
+    std::shared_ptr<Board>          board;
+    StockfishEngine                 engine;
+    bool                            m_isPlayerWhite;
+    std::atomic<bool>               m_gameOver;
+    std::atomic<bool>               m_aiStartedThinking;
+    std::vector<std::string>        moveHistory;
+    std::thread                     aiThread;
+    std::mutex                      m_mutex;
 
-    StockfishEngine engine;
+    std::atomic<bool>               m_isThinking;
+    std::atomic<bool>               m_stopThinking;
 
-    bool m_isPlayerWhite;
-    std::atomic<bool> m_gameOver;
-    std::atomic<bool> m_aiStartedThinking;
-
-    std::vector<std::string> moveHistory;
-    std::string lastAIMove;
-
-    std::thread aiThread;
-    std::mutex m_mutex;
-
-    std::atomic<bool> m_isThinking;
-    std::atomic<bool> m_stopThinking;
-
-    std::string pendingAIMove;
+    std::string                     pendingAIMove;
 
 public:
     StockfishGame(std::shared_ptr<Board> b);
     ~StockfishGame();
 
-    bool initAI(const std::wstring& stockfishPath);
-    void setDifficulty(int level);
+    bool            initAI(const std::wstring& stockfishPath);
+    void            setDifficulty(int level);
 
-    void newGame(bool playerIsWhite = true);
-    void reset();
+    void            newGame(bool playerIsWhite = true);
+    void            reset();
 
-    void startThinking(int thinkingTimeMs);
-    void stopThinking();
-    bool isThinking() const { return m_isThinking.load(); }
-    std::string getPendingMove();
+    void            startThinking(int thinkingTimeMs);
+    void            stopThinking();
+    bool            isThinking() const { return m_isThinking.load(); }
 
-    void syncFromHistory(const std::vector<std::string>& moves);
-    void syncMove(const std::string& move);
+    std::string     getPendingMove();
+    void            syncMove(const std::string& move);
 
-    bool isGameOver() const { return m_gameOver.load(); }
-
-    const Board& getBoard() const { return *board; }
-
-    std::vector<std::string> getMoveHistory() const { return moveHistory; }
-    std::string getLastAIMove() const { return lastAIMove; }
-
-    bool isPlayerWhite() const { return m_isPlayerWhite; }
-    bool hasStartedThinking() const { return m_aiStartedThinking.load(); }
+    bool            isGameOver() const { return m_gameOver.load(); }
+    bool            isPlayerWhite() const { return m_isPlayerWhite; }
 
     static std::string toUCI(const Position& pos);
     static std::string moveToUCI(const Position& from, const Position& to, char promotion = '\0');
-    static void fromUCI(const std::string& uci, Position& pos);
+    static void        fromUCI(const std::string& uci, Position& pos);
 };
-
 #endif

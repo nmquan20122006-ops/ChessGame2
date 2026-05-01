@@ -1,6 +1,7 @@
 #pragma once
 #include<vector>
 #include"Utility.h"
+
 class Board;
 
 class AllValidMove {

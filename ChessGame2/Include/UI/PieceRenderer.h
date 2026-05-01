@@ -12,16 +12,14 @@ class PieceRenderer {
 private:	
 	sf::Sprite pieceSprite[2][6]; //mảng sprite cho 2 màu và 6 loại quân cờ
 
-	GameControl* gameControl = nullptr;
+	std::shared_ptr<GameState> gameState;
 
 	std::set<Position> m_excludedPositions;
 
 	float baseScale;
 
 public:
-	PieceRenderer();
-
-	void setTarget(GameControl* control) { gameControl = control; }
+	PieceRenderer(std::shared_ptr<GameState> g);
 
 	void setupPieceSprites(TextureManager& tm);
 
@@ -29,7 +27,7 @@ public:
 
 	void drawPieceAtPos(sf::RenderWindow& window, Piece piece, float row, int col);
 
-	void drawListPromotionPiece(sf::RenderWindow& window, color turn, int col);
+	void drawListPromotionPiece(sf::RenderWindow& window, Color turn, int col);
 
 	void renderAll(sf::RenderWindow& window, const Board& board);
 

@@ -115,7 +115,7 @@ void MoveExecutor::recordPrevBoard(const Move& moveBefore) {
     undoEntry.fenBefore = gameState->currentFEN;
     undoEntry.halfMoveClockCountBefore = gameState->halfMoveClockCount;
     undoEntry.fullMoveNumberCountBefore = gameState->fullMoveNumberCount;
-    gameState->undoStack.push_back(undoEntry);
+    gameState->pushToUndoStack(undoEntry);
 }
 
 void MoveExecutor::syncAfterUndo(const UndoEntry& undoEntry) {

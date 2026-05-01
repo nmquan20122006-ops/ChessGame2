@@ -1,5 +1,4 @@
 ﻿#include "StockfishAI.h"
-#include <iostream>
 
 StockfishGame::StockfishGame(std::shared_ptr<Board> b)
     : m_isPlayerWhite(true)
@@ -32,6 +31,7 @@ void StockfishGame::setDifficulty(int level) {
 }
 
 void StockfishGame::newGame(bool playerIsWhite) {
+
     stopThinking();
 
     board->initBoard();
@@ -44,7 +44,6 @@ void StockfishGame::newGame(bool playerIsWhite) {
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         moveHistory.clear();
-        lastAIMove.clear();
         pendingAIMove.clear();
     }
 
@@ -107,38 +106,6 @@ std::string StockfishGame::getPendingMove() {
 void StockfishGame::syncMove(const std::string& currentFen) {
     engine.setPosition(currentFen);
 }
-
-void StockfishGame::syncFromHistory(const std::vector<std::string>& moves) {
-    stopThinking();
-
-    engine.setPosition();
-
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        moveHistory = moves; 
-    }
-
-    for (const auto& moveStr : moves) {
-        if (moveStr.length() < 4) continue;
-
-        engine.makeMove(moveStr);
-
-        Position from, to;
-        fromUCI(moveStr.substr(0, 2), from);
-        fromUCI(moveStr.substr(2, 2), to);
-
-        char promotionPiece = '\0';
-        if (moveStr.length() == 5) {
-            promotionPiece = moveStr[4];
-        }
-
-    }
-
-    m_gameOver = false;
-    m_aiStartedThinking = false;
-
-}
-
 
 std::string StockfishGame::toUCI(const Position& pos) {
     char file = 'a' + pos.col;

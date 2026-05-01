@@ -3,7 +3,7 @@
 #include"Constants.h"
 #include"Utility.h"
 
-enum class color;
+enum class Color;
 class PieceRenderer;
 
 class BoardRenderer {
@@ -33,7 +33,7 @@ public:
 
 	void draw(sf::RenderWindow& window);
 
-	void drawHighlight(sf::RenderWindow& window, Position pos, sf::Color color);
+	void drawHighlight(sf::RenderWindow& window, Position pos, sf::Color Color);
 
 	void drawValidMove(sf::RenderWindow& window, Position pos, bool isEnemy);
 
@@ -55,7 +55,7 @@ public:
 
 	void initCursorTexture(sf::Texture& texture);
 
-	void drawPromotionPanel(sf::RenderWindow& window,color turn, int col);
+	void drawPromotionPanel(sf::RenderWindow& window,Color turn, int col);
 
 	void initFont(sf::Font& font);
 

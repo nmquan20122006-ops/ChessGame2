@@ -3,7 +3,7 @@
 #include<algorithm>
 #include<ctime>
 
-DumpBot::DumpBot(MoveService& move,color c):moveService(move),botColor(c){
+DumpBot::DumpBot(MoveService& move,Color c):moveService(move),botColor(c){
 
 	rng.seed(std::time(0));
 }

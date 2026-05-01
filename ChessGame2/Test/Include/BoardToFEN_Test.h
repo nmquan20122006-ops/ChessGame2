@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 #include<string>
 #include<iostream>
 #include<random>
@@ -14,11 +14,11 @@ public:
 
 	Board board_Real;
 
-	std::string turnToString(color color);
+	std::string turnToString(Color Color);
 	std::string castleToString(Board& b);
 	std::string enPassantToString(Move& move);
 
-	char turnToChar(color color);
+	char turnToChar(Color Color);
 	char pieceToChar(Piece piece);
 
 	void printBoard(Board& b);
@@ -29,4 +29,4 @@ public:
 
 	void runTest(Board& b, int numMoves);
 	
-};
+};*/

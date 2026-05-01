@@ -14,12 +14,12 @@
 #include<iostream>
 
 #include"Board.h"
-#include"GameState.h"
+#include"State/GameState.hpp"
 
 class ToFEN {
 private:
 	static char PieceToChar(Piece piece);
-	static char TurnToChar(color turn);
+	static char TurnToChar(Color turn);
 
 	static std::string castleToFEN(const Board& board) ;
 	static std::string enPassantToFEN(const Move& move);
@@ -30,5 +30,5 @@ public:
 
 	static std::string FullFEN(const Board& board, const Move& move,const GameState& gameState);
 
-	static Piece charToPiece(color turn, char promotionChar);
+	static Piece charToPiece(Color turn, char promotionChar);
 };

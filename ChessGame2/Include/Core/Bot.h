@@ -3,11 +3,13 @@
 #include<random>
 #include<vector>
 
+
 class DumpBot {
+
 private:
 
-	color botColor;
-	
+	Color botColor;
+
 	BotMove botMove;
 
 	GameState gameState;
@@ -20,10 +22,10 @@ private:
 
 public:
 
-	DumpBot(MoveService& move, color c);
+	DumpBot(MoveService& move, Color c);
 
 	BotMove bot_makeMove(const Board& board);
 
-	color getBot_color()const { return botColor; }
-	void setBot_color(color c) { botColor = c; }
+	Color getBot_Color()const { return botColor; }
+	void setBot_Color(Color c) { botColor = c; }
 };

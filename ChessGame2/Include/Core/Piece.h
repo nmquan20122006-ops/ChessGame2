@@ -1,7 +1,4 @@
 #pragma once
-
-
-
 enum class Piece {
 	Empty = 0,
 	W_Pawn = 1,
@@ -18,11 +15,6 @@ enum class Piece {
 	B_Queen = 11,
 	B_King = 12
 };
-
-
-
-//Logic truy van Piece
-
 
 inline bool isWhite(Piece p) {
 

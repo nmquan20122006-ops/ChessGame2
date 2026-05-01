@@ -4,18 +4,19 @@
 #include"Utility.h"
 #include"Constants.h"
 
+class InputHandler;
 class GameControl;
 
 class InputController {
 private:
 
-	GameControl* logic = nullptr;
+	InputHandler& inputHandler;
+	GameState& gameState;
+	GameControl* gameControl;
 
 public:
 
-	InputController();
-
-	void setTarget(GameControl* control) { logic = control; }
+	InputController(InputHandler& inputHandler, GameState& gameState, GameControl* gameControl);
 
 	void handleEvent(sf::RenderWindow& window, sf::Event& e,const sf::View& view);
 

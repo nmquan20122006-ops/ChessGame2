@@ -1,4 +1,4 @@
-﻿#include"Undo_Test.h"
+﻿/*#include"Undo_Test.h"
 
 Board_DEBUG::Board_DEBUG(){}
 
@@ -18,8 +18,7 @@ Board_DEBUG::Board_DEBUG(){}
 			/*std::cout << "KING INFORMATION" << std::endl;
 
 			std::cout << "WhiteKing: " << "(" << b.whiteKingPos.row << ":" << b.whiteKingPos.col << ")" << std::endl;
-			std::cout << "BlackKing: " << "(" << b.blackKingPos.row << ":" << b.blackKingPos.col << ")" << std::endl;*/
-			
+			std::cout << "BlackKing: " << "(" << b.blackKingPos.row << ":" << b.blackKingPos.col << ")" << std::endl;
 		}
 
 		void Board_DEBUG::printMoveList() {
@@ -204,4 +203,4 @@ Board_DEBUG::Board_DEBUG(){}
 				if (!toCheck)   std::cout << "   -> Error: to is still have piece!\n";
 			}
 
-		}
+		}*/

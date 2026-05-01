@@ -20,9 +20,9 @@ char ToFEN::PieceToChar(Piece piece) {
 	}
 }
 
-Piece ToFEN::charToPiece(color turn, char promotionChar) {
+Piece ToFEN::charToPiece(Color turn, char promotionChar) {
 
-	if (turn == color::white) {
+	if (turn == Color::white) {
 		if (promotionChar == 'q') return Piece::W_Queen;
 		if (promotionChar == 'r') return Piece::W_Rook;
 		if (promotionChar == 'b') return Piece::W_Bishop;
@@ -37,12 +37,12 @@ Piece ToFEN::charToPiece(color turn, char promotionChar) {
 	return Piece::Empty;
 }
 
-char ToFEN::TurnToChar(color turn) {
+char ToFEN::TurnToChar(Color turn) {
 
 	switch (turn) {
-	case(color::black):return 'b';
-	case(color::white):return 'w';
-	case(color::none):
+	case(Color::black):return 'b';
+	case(Color::white):return 'w';
+	case(Color::none):
 	default: return 'n';
 	}
 }

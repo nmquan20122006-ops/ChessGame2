@@ -1,6 +1,6 @@
 ﻿#include"PieceRenderer.h"
 
-PieceRenderer::PieceRenderer(): baseScale(0.f) {}
+PieceRenderer::PieceRenderer(std::shared_ptr<GameState>g): gameState(g), baseScale(0.f) {}
 
 void PieceRenderer::setupPieceSprites(TextureManager& tm) {
 
@@ -13,14 +13,14 @@ void PieceRenderer::setupPieceSprites(TextureManager& tm) {
 
     this->baseScale = (squareSize / (float)FRAME_SIZE);
 
-	for (int color = 0; color < 2; color++) {
+	for (int Color = 0; Color < 2; Color++) {
 		for (int type = 0; type < 6; type++) {
 
-			std::string colorStr = (color == 0) ? "_WHITE" : "_BLACK";
+			std::string ColorStr = (Color == 0) ? "_WHITE" : "_BLACK";
 
-			pieceSprite[color][type] = tm.createSprite("Piecesprite", pieceNames[type] + colorStr);
+			pieceSprite[Color][type] = tm.createSprite("Piecesprite", pieceNames[type] + ColorStr);
 
-			pieceSprite[color][type].setScale(baseScale,baseScale);
+			pieceSprite[Color][type].setScale(baseScale,baseScale);
 
 		}
 	}
@@ -39,16 +39,16 @@ void PieceRenderer::drawPiece(sf::RenderWindow& window, Position pos, const Boar
         return;
     }
 
-    int colorIndex = white ? 0 : 1;
+    int ColorIndex = white ? 0 : 1;
 
     Piece pieceType = getType(piece);
     int typeIndex = static_cast<int>(pieceType) - 1;
 
-    if (colorIndex < 0 || colorIndex >= 2 || typeIndex < 0 || typeIndex >= 6) {
+    if (ColorIndex < 0 || ColorIndex >= 2 || typeIndex < 0 || typeIndex >= 6) {
         return;
     }
 
-    sf::Sprite& sprite = pieceSprite[colorIndex][typeIndex];
+    sf::Sprite& sprite = pieceSprite[ColorIndex][typeIndex];
 
     sprite.setScale(baseScale, baseScale);
     sprite.setOrigin(0.f, 0.f);
@@ -66,10 +66,10 @@ void PieceRenderer::drawPieceAtPos(sf::RenderWindow& window, Piece piece, float 
 
 	if (piece == Piece::Empty) return;
     
-	int colorIndex = isWhite(piece) ? 0 : 1;
+	int ColorIndex = isWhite(piece) ? 0 : 1;
 	int typeIndex = static_cast<int>(getType(piece)) - 1;
     
-	sf::Sprite& sprite = pieceSprite[colorIndex][typeIndex];
+	sf::Sprite& sprite = pieceSprite[ColorIndex][typeIndex];
 	sprite.setScale(baseScale, baseScale);
 
 	float offsetX = (squareSize - sprite.getGlobalBounds().width) / 2.f;
@@ -82,15 +82,15 @@ void PieceRenderer::drawPieceAtPos(sf::RenderWindow& window, Piece piece, float 
 
 }
 
-void PieceRenderer::drawListPromotionPiece(sf::RenderWindow& window, color turn, int col) {
+void PieceRenderer::drawListPromotionPiece(sf::RenderWindow& window, Color turn, int col) {
 
-    std::vector<Piece> promotionPieces = (turn == color::white) ?
+    std::vector<Piece> promotionPieces = (turn == Color::white) ?
         std::vector<Piece>{ Piece::W_Queen, Piece::W_Rook, Piece::W_Bishop, Piece::W_Knight } :
         std::vector<Piece>{ Piece::B_Queen, Piece::B_Rook, Piece::B_Bishop, Piece::B_Knight };
 
     for (int i = 0; i < promotionPieces.size(); i++) {
 
-        float rowIndex = (turn == color::white) ? (float)i : (float)(4 + i);
+        float rowIndex = (turn == Color::white) ? (float)i : (float)(4 + i);
 
         drawPieceAtPos(window, promotionPieces[i], rowIndex, col);
     }
@@ -98,7 +98,7 @@ void PieceRenderer::drawListPromotionPiece(sf::RenderWindow& window, color turn,
 
 void PieceRenderer::renderAll(sf::RenderWindow& window, const Board& board) {
 
-    const auto& drag = gameControl->getState().getDragState();
+    const auto& drag = gameState->getDragState();
 
     for (int r = 0; r < boardSize; r++) {
         for (int c = 0; c < boardSize; c++) {
@@ -138,18 +138,18 @@ void PieceRenderer::renderAll(sf::RenderWindow& window, const Board& board) {
 
 sf::Sprite& PieceRenderer::getSpriteForPiece(Piece p) {
     
-    int colorIndex = isWhite(p) ? 0 : 1;
+    int ColorIndex = isWhite(p) ? 0 : 1;
 
     int typeIndex = static_cast<int>(getType(p)) - 1;
 
-    return pieceSprite[colorIndex][typeIndex];
+    return pieceSprite[ColorIndex][typeIndex];
 }
 
 sf::Sprite PieceRenderer::getCopySprite(Piece p) {
 
-    int colorIndex = isWhite(p) ? 0 : 1;
+    int ColorIndex = isWhite(p) ? 0 : 1;
 
     int typeIndex = static_cast<int>(getType(p)) - 1;
 
-    return pieceSprite[colorIndex][typeIndex];
+    return pieceSprite[ColorIndex][typeIndex];
 }
