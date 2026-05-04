@@ -11,3 +11,5 @@ int const windowHeight = 800;
 int const offset = 30;
 
 int const boardPixelSize = 640;
+
+const std::string SOUND_PATH = "Assets/Sound/";

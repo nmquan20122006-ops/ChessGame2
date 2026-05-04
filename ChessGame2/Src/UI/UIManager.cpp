@@ -16,6 +16,8 @@ void UIManager::onResize(unsigned int width, unsigned int height) {
 
 sf::View UIManager::getLetterBox(sf::View& boardView, unsigned int width, unsigned int height) {
 
+	if (width == 0 || height == 0)return boardView;
+
 	float windowRatio = (float)width / height;
 	float viewRatio = boardView.getSize().x / boardView.getSize().y;
 

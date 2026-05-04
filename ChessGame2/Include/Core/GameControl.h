@@ -69,7 +69,7 @@ public:
     void             subscribeToMove(MoveEventCallback callback) { m_onMoveExecutedListeners.push_back(callback); }
     void             subscribeToStateChange(StateChangeCallback callback) { m_onGameStateChangedListeners.push_back(callback); }
     void             setAnimationProvider(AnimRequest provider) { animationProvider = provider; }
-
+    void             publishMoveEvent(Move& move);
     //====================================================================
     //sync
     //====================================================================
@@ -77,6 +77,7 @@ public:
     void             finalizeMove(const Move& move);
 
     void             initStockfishGame();
+    void             stopStockfish();
     void             updateAiMove();
     void             preparePromotion(Position fromPos, Position toPos);
     void             resetGame();

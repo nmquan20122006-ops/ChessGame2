@@ -1,6 +1,7 @@
 ﻿#include "MoveExecutor.h"
 #include "MoveValidator.h"
 #include "Board.h"
+#include "EventBus.h"
 
 MoveExecutor::MoveExecutor(std::shared_ptr<Board> b, std::shared_ptr<GameState> g) : board(b), gameState(g) {}
 
@@ -79,14 +80,19 @@ void MoveExecutor::applyMove(Move& move) {
     Piece piece = move.movedPiece;
 
     if (implementEnPassant(move, piece) == MoveType::enPassant) {
+
+        recordPrevBoard(move);
+
         board->movePiece(move.fromPos, move.toPos);
-        move.moveType = MoveType::enPassant;
+
+        gameState->setHalfMoveClockCount(halfMoveClockProcess(gameState->getHalfMoveClockCount(), move));
+        gameState->setFullMoveNumberCount(fullMoveNumberProcess(gameState->getFullMoveNumberCount(), gameState->getCurrentTurn()));
+
         board->updateCastleState(piece, move.fromPos, move.toPos, move.capturedPiece);
         return;
     }
     
     if (implementCastle(move, piece) == MoveType::castle) {
-        move.moveType = MoveType::castle;
         board->updateCastleState(piece, move.fromPos, move.toPos, move.capturedPiece);
         return;
     }
@@ -97,39 +103,37 @@ void MoveExecutor::applyMove(Move& move) {
 
     if (implementPromotion(move, piece) == MoveType::promotion) {
         board->setPiece(move.toPos, piece);
-        move.moveType = MoveType::promotion;
         board->updateCastleState(piece, move.fromPos, move.toPos, move.capturedPiece);
         return;
     }
 
-    gameState->halfMoveClockCount = halfMoveClockProcess(gameState->halfMoveClockCount, move);
-    gameState->fullMoveNumberCount = fullMoveNumberProcess(gameState->fullMoveNumberCount, gameState->getCurrentTurn());
+    gameState->setHalfMoveClockCount(halfMoveClockProcess(gameState->getHalfMoveClockCount(), move));
+    gameState->setFullMoveNumberCount(fullMoveNumberProcess(gameState->getFullMoveNumberCount(), gameState->getCurrentTurn()));
 
     board->updateCastleState(piece, move.fromPos, move.toPos, move.capturedPiece);
-    move.moveType = MoveType::normal;
 }
 
 void MoveExecutor::recordPrevBoard(const Move& moveBefore) {
-    //create a previous board
+
     std::shared_ptr<Board> prevBoard = std::make_shared<Board>(*board);
-    //create a undoEntry
+
     UndoEntry undoEntry;
     undoEntry.boardBefore = prevBoard;
     undoEntry.moveBefore = moveBefore;
-    undoEntry.turnBefore = gameState->currentTurn;
-    undoEntry.fenBefore = gameState->currentFEN;
-    undoEntry.halfMoveClockCountBefore = gameState->halfMoveClockCount;
-    undoEntry.fullMoveNumberCountBefore = gameState->fullMoveNumberCount;
+    undoEntry.turnBefore = gameState->getCurrentTurn();
+    undoEntry.fenBefore = gameState->getCurrentFEN();
+    undoEntry.halfMoveClockCountBefore = gameState->getHalfMoveClockCount();
+    undoEntry.fullMoveNumberCountBefore = gameState->getFullMoveNumberCount();
     gameState->pushToUndoStack(undoEntry);
 }
 
 void MoveExecutor::syncAfterUndo(const UndoEntry& undoEntry) {
 
     *this->board = *undoEntry.boardBefore;
-    gameState->currentTurn = undoEntry.turnBefore;
-    gameState->currentFEN = undoEntry.fenBefore;
-    gameState->halfMoveClockCount = undoEntry.halfMoveClockCountBefore;
-    gameState->fullMoveNumberCount = undoEntry.fullMoveNumberCountBefore;
+    gameState->setCurrentTurn(undoEntry.turnBefore);
+    gameState->setCurrentFEN(undoEntry.fenBefore);
+    gameState->setHalfMoveClockCount(undoEntry.halfMoveClockCountBefore);
+    gameState->setFullMoveNumberCount(undoEntry.fullMoveNumberCountBefore);
 }
 
 int MoveExecutor::halfMoveClockProcess(int prevClock, const Move& move) {

@@ -34,4 +34,6 @@ public:
 
 	int			halfMoveClockProcess(int prevClock, const Move& move);
 	int			fullMoveNumberProcess(int prevClock, const Color currentTurn);
+
+	void		updateEventBus();
 };

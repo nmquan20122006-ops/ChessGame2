@@ -39,4 +39,5 @@ public:
 	void	HandlePress(Position pos, sf::Vector2f mousePos);
 	void	HandleMove(sf::Vector2f mousePos);
 	void	HandleRelease(Position to);
+	void	HandleClickPromotionPanel(sf::Vector2f mousePos);
 };

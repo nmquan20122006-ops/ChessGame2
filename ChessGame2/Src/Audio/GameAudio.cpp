@@ -1,40 +1,67 @@
-#include"GameAudio.h"
+﻿#include"GameAudio.h"
 #include"GameControl.h"
+#include"EventBus.h"
 
-AudioManager::AudioManager(GameControl& g) :gameControl(g) {
+AudioManager::AudioManager() {
 
-    gameControl.subscribeToMove([this](const Move& move) {
-        this->playSound("MoveSound", 100.f, 100.f);
-        });
+    auto& eventBus = EventBus::get();
+
+    eventBus.subcribe(GameEvent::Capture,      [this] {playSound("CaptureSound"); });
+    eventBus.subcribe(GameEvent::UnValidMove,  [this] {playSound("UnValidMoveSound"); });
+    eventBus.subcribe(GameEvent::Move,         [this] {playSound("MoveSound"); });
+    eventBus.subcribe(GameEvent::Check,        [this] {playSound("CheckSound"); });
+    eventBus.subcribe(GameEvent::CheckMate,    [this] {playSound("CheckMateSound"); });
+    eventBus.subcribe(GameEvent::Select,       [this] {playSound("SelectSund"); });
+    eventBus.subcribe(GameEvent::Castle,       [this] {playSound("CastleSound"); });
+    eventBus.subcribe(GameEvent::Promotion,    [this] {playSound("PromotionSound"); });
+
 }
 
-bool AudioManager::loadSound(const std::string& name, const std::string& filename) {
-
+bool AudioManager::loadSound(const std::string& name, const std::string& file)
+{
     sf::SoundBuffer buffer;
-    if (buffer.loadFromFile(filename)) {
-        buffers[name] = buffer;
-        return true;
+
+    if (!buffer.loadFromFile(file)) {
+        std::cout << "Failed load: " << file << std::endl;
+        return false;
     }
-    return false;
+
+    buffers.emplace(name, std::move(buffer));
+    return true;
 }
 
-void AudioManager::playSound(const std::string& name, float volume, float pitch) {
+void AudioManager::playSound(const std::string& name, float volume, float pitch)
+{
+    auto it = buffers.find(name);
+    if (it == buffers.end()) return;
 
-    if (buffers.find(name) != buffers.end()) {
-        activeSounds.push_back(sf::Sound(buffers[name]));
-        sf::Sound& s = activeSounds.back();
+    // cleanup sound stopped trước
+    activeSounds.erase(
+        std::remove_if(activeSounds.begin(), activeSounds.end(),
+            [](sf::Sound& s) {
+                return s.getStatus() == sf::Sound::Stopped;
+            }),
+        activeSounds.end()
+    );
 
-        s.setVolume(volume);
-        s.setPitch(pitch);
-        s.play();
-       
-    }
+    activeSounds.emplace_back();
+    sf::Sound& sound = activeSounds.back();
+
+    sound.setBuffer(it->second);
+    sound.setVolume(volume * globalVolume / 100.f);
+    sound.setPitch(pitch);
+    sound.play();
 }
 
-void AudioManager::update() {
-    activeSounds.remove_if([](const sf::Sound& s) {
-        return s.getStatus() == sf::Sound::Stopped;
-        });
+void AudioManager::update()
+{
+    activeSounds.erase(
+        std::remove_if(activeSounds.begin(), activeSounds.end(),
+            [](const sf::Sound& s) {
+                return s.getStatus() == sf::Sound::Stopped;
+            }),
+        activeSounds.end()
+    );
 }
 
 bool AudioManager::playMusic(const std::string& filename, bool loop) {
@@ -48,8 +75,10 @@ void AudioManager::stopMusic() {
     backgroundMusic.stop();
 }
 
-void AudioManager::setMusicVolume(float volume) {
-    backgroundMusic.setVolume(volume);
+void AudioManager::setVolume(float v)
+{
+    globalVolume = v;
+    backgroundMusic.setVolume(v);
 }
 
 void AudioManager::initSound(){
@@ -62,4 +91,6 @@ void AudioManager::initSound(){
     loadSound("CheckSound", "Assets/Sound/check.wav");
     loadSound("CheckMateSound", "Assets/Sound/checkmate.wav");
     loadSound("SelectSound", "Assets/Sound/select.wav");
+    loadSound("CastleSound", SOUND_PATH + "castle.wav");
+    loadSound("PromotionSound", SOUND_PATH + "promote.wav");
 }

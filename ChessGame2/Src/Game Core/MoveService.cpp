@@ -173,17 +173,22 @@ Move MoveService::createMove(Position fromPos, Position toPos, Board& board) {
     move.capturedPiece = board.getPiece(toPos);
     move.promotionPiece = Piece::Empty;
 
-    if (move.movedPiece == Piece::W_King && std::abs(toPos.col - fromPos.col) == 2) {
+    bool isWhitePromotion = (move.movedPiece == Piece::W_Pawn && toPos.row == 0);
+    bool isBlackPromotion = (move.movedPiece == Piece::B_Pawn && toPos.row == 7);
+
+    if (isWhitePromotion || isBlackPromotion) {
+        move.moveType = MoveType::promotion;
+    }
+    else if ((move.movedPiece == Piece::W_King && std::abs(toPos.col - fromPos.col) == 2)||
+        (move.movedPiece==Piece::B_King&&std::abs(toPos.col-fromPos.col)==2)) {
         move.moveType = MoveType::castle;
     }
-
-    else if (move.movedPiece == Piece::W_Pawn && fromPos.col != toPos.col && board.getPiece(toPos) == Piece::Empty) {
-        move.moveType = MoveType::enPassant;
+    else if (move.capturedPiece != Piece::Empty) {
+        move.moveType = MoveType::capture;
     }
-    //promotion triggered
-    else if (move.movedPiece == Piece::W_Pawn && toPos.row == 0 || move.movedPiece == Piece::B_Pawn && toPos.row == 7) {
-        std::cout << "Promotion triggered! " << std::endl;
-        move.moveType = MoveType::promotion;
+    else if (move.movedPiece == Piece::W_Pawn && fromPos.col != toPos.col
+        && board.getPiece(toPos) == Piece::Empty) {
+        move.moveType = MoveType::enPassant;
     }
     else {
         move.moveType = MoveType::normal;

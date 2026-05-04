@@ -5,6 +5,8 @@
 #include "StockfishAI.h" 
 #include "Bot.h"
 #include "ToFEN.h"
+#include "EventBus.h"
+#include "State/Move.hpp"
 
 GameControl::GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
 	std::shared_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me) {
@@ -23,20 +25,35 @@ GameControl::GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
 GameControl::~GameControl() = default;
 
 bool GameControl::requestMove(Position from, Position to) {
-	//---before move
+
 	if (!moveService->isValidMove(from, to, *board)) return false;
-	//create move object
+
 	Move move = moveService->createMove(from, to, *board);
 
 	if (move.moveType == MoveType::promotion) {
+
 		preparePromotion(from, to);
 		return true;
 	}
 	else {
+
 		moveExecutor->applyMove(move);
 		finalizeMove(move);
+		publishMoveEvent(move);
 		return true;
 	}
+	return true;
+}
+
+void GameControl::publishMoveEvent(Move& move) {
+	
+	if (gameState->getIsCheckMate())				EventBus::get().publish(GameEvent::CheckMate);
+	else if (gameState->getIsCheck())               EventBus::get().publish(GameEvent::Check);
+	else if (move.moveType == MoveType::castle)		EventBus::get().publish(GameEvent::Castle);
+	else if (move.moveType == MoveType::enPassant)  EventBus::get().publish(GameEvent::EnPassant);
+	else if (move.moveType == MoveType::promotion)  EventBus::get().publish(GameEvent::Promotion);
+	else if (move.moveType == MoveType::capture)	EventBus::get().publish(GameEvent::Capture);
+	else if (move.moveType == MoveType::normal)		EventBus::get().publish(GameEvent::Move);
 }
 
 bool GameControl::requestAiMove(Position from, Position to, char promotionChar) {
@@ -47,12 +64,12 @@ bool GameControl::requestAiMove(Position from, Position to, char promotionChar) 
 
 	if (promotionChar != '\0' && move.moveType == MoveType::promotion) {
 		move.promotionPiece = ToFEN::charToPiece(gameState->currentTurn, promotionChar);
+		
 	}
-
-	moveExecutor->recordPrevBoard(move);
 	moveExecutor->applyMove(move);
 
 	finalizeMove(move);
+	publishMoveEvent(move);
 
 	return true;
 }
@@ -74,16 +91,15 @@ void GameControl::executePromotionMove(Piece selectedPiece) {
 
 	move.promotionPiece = selectedPiece;
 
-	//record the state before move for undo functionality
-	moveExecutor->recordPrevBoard(move);
-
 	moveExecutor->applyMove(move);
-
-	updateGameState();
 
 	gameState->gameStatus = GameStatus::Normal;
 	gameState->pendingFrom = { -1, -1 };
 	gameState->pendingTo = { -1, -1 };
+
+	finalizeMove(move);
+	publishMoveEvent(move);
+
 }
 
 void GameControl::finalizeMove(const Move& move) {
@@ -96,6 +112,10 @@ void GameControl::finalizeMove(const Move& move) {
 }
 
 bool GameControl::executePlayerMove(Position from, Position to) {
+
+	if (!moveService->isValidMove(from, to, *board)) {
+		return false;
+	}
 
 	if (animationProvider) {
 
@@ -142,13 +162,13 @@ void GameControl::updateGameState() {
 
 	gameState->switchTurn();
 
-	auto& Turn = gameState->currentTurn;
+	const auto& Turn = gameState->getCurrentTurn();
 
-	gameState->isCheck = moveService->Check(*board, Turn);
+	gameState->setIsCheck(moveService->Check(*board, Turn));
 
-	if (gameState->isCheck)gameState->checkPos = board->findKing(Turn==Color::white);
+	if (gameState->getIsCheck())gameState->setCheckPos(board->findKing(Turn == Color::white));
 
-	gameState->isCheckMate = moveService->CheckMate(*board, Turn);
+	gameState->setIsCheckMate(moveService->CheckMate(*board, Turn));
 }
 
 void GameControl::initStockfishGame() {
@@ -213,17 +233,14 @@ void GameControl::updateAiMove() {
 		executeAiMove(uciMove);
 	}
 	else{
-
 		stockfishGame->startThinking(2000);
 	}
 }
 
 void GameControl::syncAfterUndo(const UndoEntry& undoEntry) {
-	//Restore the board state, turn, FEN, half move clock, and full move number from the undo entry
-	moveExecutor->syncAfterUndo(undoEntry);
 
-	//update stockfish fen to match with the restored game state after undoing the move
-	stockfishGame->syncMove(gameState->currentFEN);
+	moveExecutor->syncAfterUndo(undoEntry);
+	stockfishGame->syncMove(gameState->getCurrentFEN());
 }
 
 bool GameControl::executeUndoMove() {
@@ -246,7 +263,8 @@ bool GameControl::executeUndoMove() {
 			
 			gameState->setAnimating(false);
 
-			if (gameState->getAiState().isAiEnabled && gameState->currentTurn == gameState->getAiState().aiTurn) {
+			if (gameState->getAiState().isAiEnabled &&
+				gameState->currentTurn == gameState->getAiState().aiTurn) {
 				this->executeUndoMove();
 			}
 			});
@@ -254,7 +272,8 @@ bool GameControl::executeUndoMove() {
 	else {
 
 		this->syncAfterUndo(lastEntry);
-		if (gameState->getAiState().isAiEnabled && gameState->currentTurn == gameState->getAiState().aiTurn) {
+		if (gameState->getAiState().isAiEnabled &&
+			gameState->currentTurn == gameState->getAiState().aiTurn) {
 			this->executeUndoMove();
 		}
 		gameState->setAnimating(false);
@@ -277,4 +296,8 @@ void GameControl::resetGame() {
 bool GameControl::isBlocking()const {
 
 	return stockfishGame->isThinking() || gameState->getAnimating() == true;
+}
+
+void GameControl::stopStockfish() {
+	stockfishGame->stopThinking();
 }

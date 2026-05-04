@@ -31,7 +31,7 @@ private:
 	std::unique_ptr<GameControl>		gameControl;
 
 	TextureManager						textureManager;
-	std::shared_ptr<AudioManager>		audio;
+	AudioManager						audio;
 
 	BoardRenderer						boardRenderer;
 	PieceRenderer						pieceRender;
@@ -47,9 +47,6 @@ private:
 	InformationPanel					informationPanel;
 	
 	sf::Vector2u windowSize = { windowWidth,windowHeight };
-
-	const sf::View& boardView = uiManager.getBoardView();
-	const sf::View& uiView = uiManager.getUiView();
 
 public:
 

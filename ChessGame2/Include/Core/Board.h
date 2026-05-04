@@ -134,7 +134,7 @@ public:
 	// =========================================================
 	// castling state management
 	// =========================================================
-	CastleState	 getCastleState()const		{ return castleState; }
+	const auto&	 getCastleState()const		{ return castleState; }
 	void		 updateCastleState(Piece p, Position from, Position to, Piece capturedPiece);
 	auto		 resetWhiteKingSide()		{ return castleState.resetWhiteKingSide(); }
 	auto		 resetWhiteQueenSide()		{ return castleState.resetWhiteQueenSide(); }

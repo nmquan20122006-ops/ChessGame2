@@ -50,20 +50,23 @@ public:
 	//===================================================================================================
 	//Setters
 	//===================================================================================================
-	AiState&			 setAiState()					  { return aiState; }
-	DragState&			 setDragState()					  { return drag; }
-	void				 setGameMode(GameMode m)		  { currentMode = m; }
-	void				 setGameStatus(GameStatus state)  { gameStatus = state; }
-	void				 setDualMode(bool a)			  { isDualMode = a; }
-	void				 setSelectPos(Position pos)		  { selectedPos = pos; }
-	void				 setHalfMoveClockCount(int a)     { halfMoveClockCount = a; }
-	void				 setFullMoveNumberCount(int a)    { fullMoveNumberCount = a; }
-	bool				 hasSelection()				const { return selectedPos.row != -1; }
+	AiState&			 setAiState()						{ return aiState; }
+	DragState&			 setDragState()						{ return drag; }
+	void				 setGameMode(GameMode m)			{ currentMode = m; }
+	void				 setGameStatus(GameStatus state)	{ gameStatus = state; }
+	void				 setDualMode(bool a)				{ isDualMode = a; }
+	void				 setSelectPos(Position pos)			{ selectedPos = pos; }
+	void				 setHalfMoveClockCount(int a)		{ halfMoveClockCount = a; }
+	void				 setFullMoveNumberCount(int a)		{ fullMoveNumberCount = a; }
+	bool				 hasSelection()				const	{ return selectedPos.row != -1; }
 	void				 setValidMoves(std::vector<Position> v) { validMoves = v; }
-	void				 setIsCheck(bool state)			  { isCheck = state; }
-	void				 setIsSelected(bool state)        { isSelected = state; }
-	void				 setIsCheckMate(bool state)		  { isCheckMate = state; }
-	void				 setAnimating(bool state)	      { isAnimating = state; }
+	void				 setIsCheck(bool state)				{ isCheck = state; }
+	void				 setIsSelected(bool state)			{ isSelected = state; }
+	void				 setIsCheckMate(bool state)			{ isCheckMate = state; }
+	void				 setAnimating(bool state)			{ isAnimating = state; }
+	void				 setCheckPos(Position pos)			{ checkPos = pos; }
+	void				 setCurrentTurn(Color turn)			{ currentTurn = turn; }
+	void				 setCurrentFEN(std::string fen)		{ currentFEN = fen; }
 	//===================================================================================================
 	//Action methods
 	//===================================================================================================
@@ -97,7 +100,6 @@ public:
 	}
 private:
 	friend class GameControl;
-	friend class MoveExecutor;
 	friend class Board_DEBUG;
 	friend class BoardToFEN_DEBUG;
 	//===================================================================================================

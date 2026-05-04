@@ -1,4 +1,5 @@
 ﻿#include"GameVideo.h"
+#include"EventBus.h"
 #include<iostream>
 
 GameVideo::GameVideo() :
@@ -10,15 +11,14 @@ GameVideo::GameVideo() :
 	state				(std::make_shared<GameState>()),
 	moveService			(std::make_shared<MoveService>()),
 	uiManager			(windowSize, analysisPanel),
-	pieceRender			(state)
+	pieceRender			(state),
+	audio				()
 	{
 
 	moveExecutor =		std::make_unique<MoveExecutor>(board,state);
 	inputHandler =		std::make_unique<InputHandler>(board, state, moveService);
 	gameControl =		std::make_unique<GameControl>(board, state, moveService, moveExecutor);
 	inputController =	std::make_unique<InputController>(*inputHandler, *state, gameControl.get());
-	audio =				std::make_shared<AudioManager>(*gameControl);
-	window.setFramerateLimit(144);
 
 	float rightEdge = uiManager.getBoardRightEdgeRatio();
 	float leftEdge = uiManager.getBoardView().getViewport().left;
@@ -30,26 +30,30 @@ GameVideo::GameVideo() :
 	callBackAll();
 	
 	window.setMouseCursorVisible(false);
+	window.setFramerateLimit(144);
 	}
 
 void GameVideo::initAll(){
-
 	textureManager.initTexture();
-	audio->initSound();
+	audio.initSound();
 	loadTextureForMember();
 	gameControl->initStockfishGame();
 }
 
 void GameVideo::callBackAll() {
+
 	inputHandler->setOnClickMove([this](Position from, Position to) {
 		gameControl->executePlayerMove(from, to);
 		});
+
 	inputHandler->setOnDragMove([this](Position from, Position to) {
 		gameControl->requestMove(from, to);
 		});
+
 	inputHandler->setIsBlock([this]()->bool {
 		return gameControl->isBlocking();
 		});
+
 	gameControl->setAnimationProvider([this](Position from, Position to, Piece piece, std::function<void()> onComplete) {
 
 		if (piece == Piece::Empty) {
@@ -64,14 +68,13 @@ void GameVideo::callBackAll() {
 		sf::Vector2f start = toPixel(from);
 		sf::Vector2f end = toPixel(to);
 
-		this->animator.addMove(pieceSprite, start, end, 120, [this, from, to, onComplete]() {
+		this->animator.addMove(pieceSprite, start, end, 100, [this, from, to, onComplete]() {
 
 			this->pieceRender.includePosition(from);
 
 			if (onComplete) onComplete();
 			});
 		});
-
 
 }
 
@@ -150,7 +153,7 @@ void GameVideo::renderHighlightLastMove(sf::RenderWindow& window) {
 
 void GameVideo::renderBoardHover(sf::RenderWindow& window) {
 
-	Position hoverPos = inputController->getMouseHoverPosition(window,boardView);
+	Position hoverPos = inputController->getMouseHoverPosition(window, uiManager.getBoardView());
 
 	boardRenderer.drawHover(window, hoverPos);
 }
@@ -207,9 +210,11 @@ void GameVideo::gameLoop(float dt) {
 
 	animator.update(dt);
 	
-	gameControl->updateAiMove();
+	//gameControl->updateAiMove();
 
-	audio->update();
+	audio.update();
+
+	EventBus::get().dispatch();
 
 	renderWindow(window, dt);
 }
@@ -232,7 +237,7 @@ void GameVideo::updateEvent(sf::Event e) {
 
 	}
 
-	inputController->handleEvent(window, e, boardView);
+	inputController->handleEvent(window, e, uiManager.getBoardView());
 }
 
 void GameVideo::Run() {

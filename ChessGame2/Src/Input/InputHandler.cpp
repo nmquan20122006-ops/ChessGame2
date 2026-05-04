@@ -1,6 +1,7 @@
 #include"InputHandler.h"
 #include"Board.h"
 #include"MoveService.h"
+#include"EventBus.h"
 #include<iostream>
 
 InputHandler::InputHandler(std::shared_ptr<Board>b, std::shared_ptr<GameState>s, std::shared_ptr<MoveService> m):
@@ -34,8 +35,11 @@ void InputHandler::HandleSquareSelection(Position pos) {
 	bool isOwnPiece = IsCurrentTurnPiece(piece);
 
 	if (!gameState->hasSelection()) {
-		if (isOwnPiece) Select(pos);
-		
+
+		if (isOwnPiece) {
+			Select(pos);
+			EventBus::get().publish(GameEvent::Select);
+		}
 		return;
 	}
 
@@ -55,6 +59,8 @@ void InputHandler::HandleSquareSelection(Position pos) {
 		return;
 	}
 
+	EventBus::get().publish(GameEvent::UnValidMove);
+	
 	Deselect();
 }
 
@@ -111,8 +117,54 @@ void InputHandler::HandleRelease(Position toPos) {
 		drag.reset();
 		Deselect();
 		return;
+	} 
+	if (isDifferentSquare && isSelectionMatch && !isTarget) {
+		EventBus::get().publish(GameEvent::UnValidMove);
 	}
 
 	drag.reset();
-	
 }
+
+/*void InputHandler::HandleClickPromotionPanel(sf::Vector2f worldPos) {
+
+	int col = static_cast<int>((worldPos.x - offset) / squareSize);
+	int row = static_cast<int>((worldPos.y - offset) / squareSize);
+
+	Position pendingTo = gameState->getPendingTo();
+	Color turn = gameState->getCurrentTurn();
+
+	if (col == pendingTo.col) {
+		int startRow = (turn == Color::white) ? 0 : 4;
+		int endRow = (turn == Color::white) ? 3 : 7;
+
+		if (row >= startRow && row <= endRow) {
+
+			int index = std::abs(row - startRow);
+
+			Piece selected;
+			if (turn == Color::white) {
+				if (index == 0) selected = Piece::W_Queen;
+				else if (index == 1) selected = Piece::W_Rook;
+				else if (index == 2) selected = Piece::W_Bishop;
+				else selected = Piece::W_Knight;
+			}
+			else {
+				if (index == 0) selected = Piece::B_Queen;
+				else if (index == 1) selected = Piece::B_Rook;
+				else if (index == 2) selected = Piece::B_Bishop;
+				else selected = Piece::B_Knight;
+			}
+
+			//send the selected promotion piece to game control to execute the promotion move
+			gameControl->executePromotionMove(selected);
+		}
+		else {
+
+			//logic->cancelPromotion();
+		}
+	}
+	else {
+
+		//logic->cancelPromotion();
+	}
+}*/

@@ -1,36 +1,33 @@
+﻿#pragma once
 #include <SFML/Audio.hpp>
-#include <map>
+#include <unordered_map>
+#include <vector>
+#include <memory>
 #include <string>
-#include <list>
-
-class GameControl;
 
 class AudioManager {
 private:
-    std::map<std::string, sf::SoundBuffer> buffers;
+    std::unordered_map<std::string, sf::SoundBuffer> buffers;
 
-    std::list<sf::Sound> activeSounds;
+    // pool sound đang chạy
+    std::vector<sf::Sound> activeSounds;
 
     sf::Music backgroundMusic;
 
-    GameControl& gameControl;
+    float globalVolume = 100.f;
 
 public:
-    AudioManager(GameControl& gameControl);
+    AudioManager();
 
-    bool loadSound(const std::string& name, const std::string& filename);
+    bool loadSound(const std::string& name, const std::string& file);
 
-    void playSound(const std::string& name, float volume = 100.f, float pitch = 1.0f);
-
-    bool playMusic(const std::string& filename, bool loop = true);
-
-    void stopMusic();
-
-    void setMusicVolume(float volume);
-
-    void setSoundVolume(float volume);
-
-    void initSound();
+    void playSound(const std::string& name, float volume = 100.f, float pitch = 1.f);
 
     void update();
+
+    bool playMusic(const std::string& file, bool loop = true);
+    void stopMusic();
+
+    void setVolume(float v);
+    void initSound();
 };
