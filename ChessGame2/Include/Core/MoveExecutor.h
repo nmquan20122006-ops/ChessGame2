@@ -13,27 +13,25 @@
 #include<memory.h>
 
 class Board;
+class MoveLog;
 
 class MoveExecutor {
 private:
 	std::shared_ptr<Board> board;
 	std::shared_ptr<GameState>gameState;
+	MoveLog& moveLog;
 
 	MoveType moveType = MoveType::none;
-
+	
 	MoveType	implementCastle(Move& move, Piece& piece);
 	MoveType	implementPromotion(Move& move, Piece& piece);
 	MoveType	implementEnPassant(Move& move, Piece& piece);
 
 public:
-	MoveExecutor(std::shared_ptr<Board> b, std::shared_ptr<GameState> g);
+	MoveExecutor(std::shared_ptr<Board> b, std::shared_ptr<GameState> g, MoveLog& m);
 
 	void		applyMove(Move& move);
-	void		recordPrevBoard(const Move& moveBefore);
-	void		syncAfterUndo(const UndoEntry& undoEntry);
 
 	int			halfMoveClockProcess(int prevClock, const Move& move);
 	int			fullMoveNumberProcess(int prevClock, const Color currentTurn);
-
-	void		updateEventBus();
 };

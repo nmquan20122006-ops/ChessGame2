@@ -12,12 +12,14 @@ GameVideo::GameVideo() :
 	moveService			(std::make_shared<MoveService>()),
 	uiManager			(windowSize, analysisPanel),
 	pieceRender			(state),
-	audio				()
+	audio				(),
+	chessNotation		(),
+	moveLog				(std::make_shared<MoveLog>(board, state, chessNotation, moveService))
 	{
 
-	moveExecutor =		std::make_unique<MoveExecutor>(board,state);
+	moveExecutor =		std::make_unique<MoveExecutor>(board,state,*moveLog);
 	inputHandler =		std::make_unique<InputHandler>(board, state, moveService);
-	gameControl =		std::make_unique<GameControl>(board, state, moveService, moveExecutor);
+	gameControl =		std::make_unique<GameControl>(board, state, moveService, moveExecutor,*moveLog);
 	inputController =	std::make_unique<InputController>(*inputHandler, *state, gameControl.get());
 
 	float rightEdge = uiManager.getBoardRightEdgeRatio();
@@ -29,7 +31,7 @@ GameVideo::GameVideo() :
 	initAll();
 	callBackAll();
 	
-	window.setMouseCursorVisible(false);
+	window.setMouseCursorVisible(true);
 	window.setFramerateLimit(144);
 	}
 
@@ -38,6 +40,8 @@ void GameVideo::initAll(){
 	audio.initSound();
 	loadTextureForMember();
 	gameControl->initStockfishGame();
+
+	informationPanel.setFont("Assets/font1.ttf");
 }
 
 void GameVideo::callBackAll() {
@@ -75,7 +79,20 @@ void GameVideo::callBackAll() {
 			if (onComplete) onComplete();
 			});
 		});
+	EventBus::get().subcribe(GameEvent::Move, [this] { refreshMoveHistory(); });
+	EventBus::get().subcribe(GameEvent::Capture, [this] { refreshMoveHistory(); });
+	EventBus::get().subcribe(GameEvent::EnPassant, [this] {refreshMoveHistory(); });
+	EventBus::get().subcribe(GameEvent::Castle, [this] {refreshMoveHistory(); });
+	EventBus::get().subcribe(GameEvent::CastleQueenSide, [this] {refreshMoveHistory(); });
+	EventBus::get().subcribe(GameEvent::Promotion, [this] {refreshMoveHistory(); });
+	EventBus::get().subcribe(GameEvent::Check, [this] { refreshMoveHistory(); });
+	EventBus::get().subcribe(GameEvent::CheckMate, [this] { refreshMoveHistory(); });
+	EventBus::get().subcribe(GameEvent::MoveRecord, [this] { refreshMoveHistory(); });
+}
 
+void GameVideo::refreshMoveHistory() {
+
+	informationPanel.updateMoveHistory(moveLog->getMoveHistoryStack());
 }
 
 void GameVideo::renderWindow(sf::RenderWindow& window,float dt) {
@@ -104,7 +121,7 @@ void GameVideo::renderWindow(sf::RenderWindow& window,float dt) {
 
 	animator.render(window);
 
-	changeCursor(window);
+	window.setView(uiManager.getUiView());
 
 	gui.draw();
 
@@ -139,7 +156,7 @@ void GameVideo::renderHightlight(sf::RenderWindow& window) {
 
 	if (state.hasSelection()) {
 
-		boardRenderer.drawHighlight(window, state.getSelectPos(), sf::Color(255, 255, 0, 70));
+		boardRenderer.drawHighlight(window, state.getSelectPos(), sf::Color(186, 202, 43, 70));
 	}
 
 }
@@ -192,9 +209,14 @@ void GameVideo::renderHighlightValidMove(sf::RenderWindow& window) {
 void GameVideo::changeCursor(sf::RenderWindow& window) {
 
 	sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-	sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+	sf::Vector2f boardPos = window.mapPixelToCoords(mousePos, uiManager.getBoardView());
+	
+	window.setView(uiManager.getBoardView());
+	boardRenderer.drawCursor(window,boardPos);
 
-	boardRenderer.drawCursor(window,worldPos);
+	sf::Vector2f uiPos = window.mapPixelToCoords(mousePos, uiManager.getUiView());
+	window.setView(uiManager.getUiView());
+	boardRenderer.drawCursor(window, uiPos);
 
 }
 
@@ -210,7 +232,7 @@ void GameVideo::gameLoop(float dt) {
 
 	animator.update(dt);
 	
-	//gameControl->updateAiMove();
+	gameControl->updateAiMove();
 
 	audio.update();
 

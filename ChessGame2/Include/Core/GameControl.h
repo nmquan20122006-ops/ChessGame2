@@ -16,27 +16,28 @@
 #include"State/GameState.hpp"
 #include"Utility.h"
 #include"Bot.h"
+#include"MoveLog.h"
 
 class Board;
 class MoveExecutor;
 class MoveService;
 class StockfishGame;
+class ChessNotation;
 
 class GameControl {
 public:
-
     using MoveEventCallback          = std::function<void(const Move& move)>;
     using StateChangeCallback        = std::function<void(GameStatus newState)>;
     using AnimRequest                = std::function<void(Position, Position, Piece, std::function<void()>)>;
 
 private:
-
     std::shared_ptr<Board>              board;
     std::unique_ptr<MoveExecutor>       moveExecutor;
     std::shared_ptr<MoveService>        moveService;
     std::shared_ptr<GameState>          gameState;
     std::unique_ptr<StockfishGame>      stockfishGame;
     std::unique_ptr<DumpBot>            dumpBot;
+    MoveLog&                            moveLog;
 
     AnimRequest                         animationProvider = nullptr;
 
@@ -49,7 +50,7 @@ private:
 
 public:
     GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
-        std::shared_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me);
+        std::shared_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me, MoveLog& l);
     ~GameControl();
     //====================================================================
     //request
@@ -73,8 +74,8 @@ public:
     //====================================================================
     //sync
     //====================================================================
-    void             syncAfterUndo(const UndoEntry& undoEntry);
-    void             finalizeMove(const Move& move);
+    void             syncAfterUndo(UndoEntry undoEntry);
+    void             finalizeMove(Move& move);
 
     void             initStockfishGame();
     void             stopStockfish();

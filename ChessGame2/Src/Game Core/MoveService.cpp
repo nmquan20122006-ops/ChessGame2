@@ -176,23 +176,25 @@ Move MoveService::createMove(Position fromPos, Position toPos, Board& board) {
     bool isWhitePromotion = (move.movedPiece == Piece::W_Pawn && toPos.row == 0);
     bool isBlackPromotion = (move.movedPiece == Piece::B_Pawn && toPos.row == 7);
 
-    if (isWhitePromotion || isBlackPromotion) {
-        move.moveType = MoveType::promotion;
-    }
-    else if ((move.movedPiece == Piece::W_King && std::abs(toPos.col - fromPos.col) == 2)||
-        (move.movedPiece==Piece::B_King&&std::abs(toPos.col-fromPos.col)==2)) {
-        move.moveType = MoveType::castle;
-    }
-    else if (move.capturedPiece != Piece::Empty) {
-        move.moveType = MoveType::capture;
-    }
-    else if (move.movedPiece == Piece::W_Pawn && fromPos.col != toPos.col
-        && board.getPiece(toPos) == Piece::Empty) {
-        move.moveType = MoveType::enPassant;
-    }
-    else {
-        move.moveType = MoveType::normal;
-    }
+    bool isKing = (move.movedPiece == Piece::B_King || move.movedPiece == Piece::W_King);
+    bool isCastle = isKing && (std::abs(move.toPos.col - move.fromPos.col) == 2);
+    bool isKingSideCastle =  (move.toPos.col == 6);
+    bool isQueenSideCastle = (move.toPos.col == 2);
+
+    bool isPawn = (move.movedPiece == Piece::W_Pawn || move.movedPiece == Piece::B_Pawn);
+    bool isEnPassant = isPawn && (move.fromPos.col != toPos.col && board.getPiece(toPos) == Piece::Empty);
+
+    if (isWhitePromotion || isBlackPromotion) move.moveType = MoveType::promotion;
+
+    else if (isCastle && isKingSideCastle) move.moveType = MoveType::castle;
+
+    else if (isCastle && isQueenSideCastle) move.moveType = MoveType::castleQueenSide;
+
+    else if (move.capturedPiece != Piece::Empty) move.moveType = MoveType::capture;
+
+    else if (isEnPassant) move.moveType = MoveType::enPassant;
+
+    else move.moveType = MoveType::normal;
 
     return move;
 }

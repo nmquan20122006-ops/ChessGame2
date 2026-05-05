@@ -133,8 +133,10 @@
     <ClCompile Include="Src\Game Core\EventBus.cpp" />
     <ClCompile Include="Src\Game Core\GameControl.cpp" />
     <ClCompile Include="Src\Game Core\MoveExecutor.cpp" />
+    <ClCompile Include="Src\Game Core\MoveLog.cpp" />
     <ClCompile Include="Src\Game Core\MoveService.cpp" />
     <ClCompile Include="Src\Bot\StockfishEngine.cpp" />
+    <ClCompile Include="Src\Game Core\NotationService.cpp" />
     <ClCompile Include="Src\Game Core\ToFEN.cpp" />
     <ClCompile Include="Src\Input\InputHandler.cpp" />
     <ClCompile Include="Src\UI\AnalysisPanel.cpp" />
@@ -161,6 +163,8 @@
     <ClInclude Include="Include\Core\ChessEngineInterface.h" />
     <ClInclude Include="Include\Core\EventBus.h" />
     <ClInclude Include="Include\Core\InputHandler.h" />
+    <ClInclude Include="Include\Core\MoveLog.h" />
+    <ClInclude Include="Include\Core\NotationService.h" />
     <ClInclude Include="Include\Core\State\Aistate.hpp" />
     <ClInclude Include="Include\Core\State\GameState.hpp" />
     <ClInclude Include="Include\Core\State\Move.hpp" />

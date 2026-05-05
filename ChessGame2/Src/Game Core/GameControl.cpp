@@ -9,7 +9,7 @@
 #include "State/Move.hpp"
 
 GameControl::GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
-	std::shared_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me) {
+	std::shared_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me, MoveLog& l) : moveLog(l) {
 	board = b;
 	gameState = s;
 	moveService = ms;
@@ -39,6 +39,7 @@ bool GameControl::requestMove(Position from, Position to) {
 
 		moveExecutor->applyMove(move);
 		finalizeMove(move);
+
 		publishMoveEvent(move);
 		return true;
 	}
@@ -46,14 +47,17 @@ bool GameControl::requestMove(Position from, Position to) {
 }
 
 void GameControl::publishMoveEvent(Move& move) {
+
+	auto& eventBus = EventBus::get();
 	
-	if (gameState->getIsCheckMate())				EventBus::get().publish(GameEvent::CheckMate);
-	else if (gameState->getIsCheck())               EventBus::get().publish(GameEvent::Check);
-	else if (move.moveType == MoveType::castle)		EventBus::get().publish(GameEvent::Castle);
-	else if (move.moveType == MoveType::enPassant)  EventBus::get().publish(GameEvent::EnPassant);
-	else if (move.moveType == MoveType::promotion)  EventBus::get().publish(GameEvent::Promotion);
-	else if (move.moveType == MoveType::capture)	EventBus::get().publish(GameEvent::Capture);
-	else if (move.moveType == MoveType::normal)		EventBus::get().publish(GameEvent::Move);
+	if (gameState->getIsCheckMate())						eventBus.publish(GameEvent::CheckMate);
+	else if (gameState->getIsCheck())						eventBus.publish(GameEvent::Check);
+	else if (move.moveType == MoveType::castle)				eventBus.publish(GameEvent::Castle);
+	else if (move.moveType == MoveType::castleQueenSide)	eventBus.publish(GameEvent::CastleQueenSide);
+	else if (move.moveType == MoveType::enPassant)			eventBus.publish(GameEvent::EnPassant);
+	else if (move.moveType == MoveType::promotion)			eventBus.publish(GameEvent::Promotion);
+	else if (move.moveType == MoveType::capture)			eventBus.publish(GameEvent::Capture);
+	else if (move.moveType == MoveType::normal)				eventBus.publish(GameEvent::Move);
 }
 
 bool GameControl::requestAiMove(Position from, Position to, char promotionChar) {
@@ -66,6 +70,7 @@ bool GameControl::requestAiMove(Position from, Position to, char promotionChar) 
 		move.promotionPiece = ToFEN::charToPiece(gameState->currentTurn, promotionChar);
 		
 	}
+
 	moveExecutor->applyMove(move);
 
 	finalizeMove(move);
@@ -102,12 +107,14 @@ void GameControl::executePromotionMove(Piece selectedPiece) {
 
 }
 
-void GameControl::finalizeMove(const Move& move) {
-	//update game state (check, checkmate, turn switch)
+void GameControl::finalizeMove(Move& move) {
+	
 	updateGameState();
-	//update FEN
+
 	gameState->currentFEN = ToFEN::FullFEN(*board, move, *gameState);
-	//notify all the listeners
+
+	moveLog.record(move);
+
 	notifyMoveExecuted(move);
 }
 
@@ -237,20 +244,22 @@ void GameControl::updateAiMove() {
 	}
 }
 
-void GameControl::syncAfterUndo(const UndoEntry& undoEntry) {
+void GameControl::syncAfterUndo(UndoEntry undoEntry) {
 
-	moveExecutor->syncAfterUndo(undoEntry);
+	moveLog.syncGame(undoEntry);
 	stockfishGame->syncMove(gameState->getCurrentFEN());
 }
 
 bool GameControl::executeUndoMove() {
 
-	if (gameState->undoStack.empty() || gameState->getAnimating() == true)return false;
+	if (moveLog.getUndoStack().empty() || gameState->getAnimating() == true)return false;
 
 	gameState->setAnimating(true);
 
-	UndoEntry lastEntry = gameState->undoStack.back();
-	gameState->undoStack.pop_back();
+	UndoEntry lastEntry = moveLog.popUndo();
+	moveLog.undoHistory();
+
+	EventBus::get().publish(GameEvent::MoveRecord);
 
 	Position toPos = lastEntry.moveBefore.toPos;
 	Position fromPos = lastEntry.moveBefore.fromPos;
@@ -266,6 +275,7 @@ bool GameControl::executeUndoMove() {
 			if (gameState->getAiState().isAiEnabled &&
 				gameState->currentTurn == gameState->getAiState().aiTurn) {
 				this->executeUndoMove();
+				
 			}
 			});
 	}

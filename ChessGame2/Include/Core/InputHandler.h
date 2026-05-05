@@ -6,6 +6,7 @@
 #include"State/GameState.hpp"
 
 class MoveService;
+class Board;
 
 class InputHandler {
 public:

@@ -45,7 +45,6 @@ public:
 	const bool 			 getIsSelected()			const { return isSelected; }
 	const bool 			 getIsCheckMate()			const { return isCheckMate; }
 	const std::string&	 getCurrentFEN()			const { return currentFEN; }
-	const auto&			 getUndoStack()				const { return undoStack; }
 	const auto&			 getAnimating()				const { return isAnimating; }
 	//===================================================================================================
 	//Setters
@@ -84,8 +83,6 @@ public:
 		return false;
 	}
 	void				 switchTurn() { currentTurn = (currentTurn == Color::white) ? Color::black : Color::white; }
-	void				 pushToUndoStack(UndoEntry entry) { undoStack.push_back(entry); }
-	bool				 canUndo() const { return !undoStack.empty(); }
 	void				 reset() {
 		currentTurn = Color::white;
 		isCheck = false;
@@ -127,7 +124,6 @@ private:
 	//Move data
 	//===================================================================================================
 	std::vector<Position>validMoves;
-	std::vector<UndoEntry>undoStack;
 	//===================================================================================================
 	//Sub-state
 	//===================================================================================================

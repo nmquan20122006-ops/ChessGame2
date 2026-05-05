@@ -15,20 +15,23 @@
 #include"AnalysisPanel.h"
 #include"InformationPanel.h"
 #include"InputHandler.h"
+#include"MoveLog.h"
+#include"NotationService.h"
 
 class GameVideo {
 
 private:
 	std::shared_ptr<Board>				board;
 	std::shared_ptr<GameState>			state;
-
 	std::unique_ptr<MoveExecutor>		moveExecutor;
 	std::shared_ptr<MoveService>		moveService;
 	std::unique_ptr<StockfishGame>		stockfishGame;
 	std::unique_ptr<DumpBot>			dumpBot;
 	std::unique_ptr<InputHandler>		inputHandler;
-
 	std::unique_ptr<GameControl>		gameControl;
+
+	ChessNotation						chessNotation;
+	std::shared_ptr<MoveLog>			moveLog;
 
 	TextureManager						textureManager;
 	AudioManager						audio;
@@ -75,6 +78,8 @@ public:
 	void initAll();
 
 	void callBackAll();
+
+	void refreshMoveHistory();
 
 	void loadTextureForMember();
 

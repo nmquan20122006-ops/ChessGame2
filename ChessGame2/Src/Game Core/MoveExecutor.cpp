@@ -2,8 +2,9 @@
 #include "MoveValidator.h"
 #include "Board.h"
 #include "EventBus.h"
+#include "MoveLog.h"
 
-MoveExecutor::MoveExecutor(std::shared_ptr<Board> b, std::shared_ptr<GameState> g) : board(b), gameState(g) {}
+MoveExecutor::MoveExecutor(std::shared_ptr<Board> b, std::shared_ptr<GameState> g, MoveLog& m) : board(b), gameState(g), moveLog(m){}
 
 MoveType MoveExecutor::implementEnPassant(Move& move, Piece& piece) {
 
@@ -81,7 +82,7 @@ void MoveExecutor::applyMove(Move& move) {
 
     if (implementEnPassant(move, piece) == MoveType::enPassant) {
 
-        recordPrevBoard(move);
+        moveLog.savePrevBoard(move);
 
         board->movePiece(move.fromPos, move.toPos);
 
@@ -97,7 +98,8 @@ void MoveExecutor::applyMove(Move& move) {
         return;
     }
 
-    recordPrevBoard(move);
+    moveLog.savePrevBoard(move);
+
 
     board->movePiece(move.fromPos, move.toPos);
 
@@ -111,29 +113,6 @@ void MoveExecutor::applyMove(Move& move) {
     gameState->setFullMoveNumberCount(fullMoveNumberProcess(gameState->getFullMoveNumberCount(), gameState->getCurrentTurn()));
 
     board->updateCastleState(piece, move.fromPos, move.toPos, move.capturedPiece);
-}
-
-void MoveExecutor::recordPrevBoard(const Move& moveBefore) {
-
-    std::shared_ptr<Board> prevBoard = std::make_shared<Board>(*board);
-
-    UndoEntry undoEntry;
-    undoEntry.boardBefore = prevBoard;
-    undoEntry.moveBefore = moveBefore;
-    undoEntry.turnBefore = gameState->getCurrentTurn();
-    undoEntry.fenBefore = gameState->getCurrentFEN();
-    undoEntry.halfMoveClockCountBefore = gameState->getHalfMoveClockCount();
-    undoEntry.fullMoveNumberCountBefore = gameState->getFullMoveNumberCount();
-    gameState->pushToUndoStack(undoEntry);
-}
-
-void MoveExecutor::syncAfterUndo(const UndoEntry& undoEntry) {
-
-    *this->board = *undoEntry.boardBefore;
-    gameState->setCurrentTurn(undoEntry.turnBefore);
-    gameState->setCurrentFEN(undoEntry.fenBefore);
-    gameState->setHalfMoveClockCount(undoEntry.halfMoveClockCountBefore);
-    gameState->setFullMoveNumberCount(undoEntry.fullMoveNumberCountBefore);
 }
 
 int MoveExecutor::halfMoveClockProcess(int prevClock, const Move& move) {

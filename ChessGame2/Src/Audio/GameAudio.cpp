@@ -14,7 +14,7 @@ AudioManager::AudioManager() {
     eventBus.subcribe(GameEvent::Select,       [this] {playSound("SelectSund"); });
     eventBus.subcribe(GameEvent::Castle,       [this] {playSound("CastleSound"); });
     eventBus.subcribe(GameEvent::Promotion,    [this] {playSound("PromotionSound"); });
-
+    eventBus.subcribe(GameEvent::CastleQueenSide, [this]{playSound("CastleSound");});
 }
 
 bool AudioManager::loadSound(const std::string& name, const std::string& file)
@@ -35,7 +35,6 @@ void AudioManager::playSound(const std::string& name, float volume, float pitch)
     auto it = buffers.find(name);
     if (it == buffers.end()) return;
 
-    // cleanup sound stopped trước
     activeSounds.erase(
         std::remove_if(activeSounds.begin(), activeSounds.end(),
             [](sf::Sound& s) {

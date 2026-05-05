@@ -16,8 +16,6 @@ struct Move {
 	Piece promotionPiece = Piece::Empty;
 
 	MoveType moveType = MoveType::none;
-
-
 	/**
 	* @brief Resets the move data to default values Useful for clearing move information after processing a move.
 	* NOTE: This does not reset the board state snapshots, as they may be needed for undo operations or move logging.
@@ -27,10 +25,13 @@ struct Move {
 	}
 };
 
+
 // BotMove struct to represent a move made by the AI bot
 struct BotMove {
 	Position fromPos, toPos;
 };
 
-enum class GameEvent { Move, Capture, Select, Check, CheckMate, Promotion,
-						UnValidMove, EnPassant, Castle };
+enum class GameEvent {
+	Move, Capture, Select, Check, CheckMate, Promotion,
+	UnValidMove, EnPassant, Castle, CastleQueenSide, MoveRecord
+};

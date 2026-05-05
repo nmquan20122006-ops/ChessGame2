@@ -115,7 +115,6 @@ void BoardRenderer::initHighlightTexture(sf::Texture& dot_Texture, sf::Texture& 
 
 void BoardRenderer::drawCoordinates(sf::RenderWindow& window) {
 
-
 	text.setFillColor(sf::Color(245, 222, 179));
 	text.setCharacterSize(15);
 
@@ -154,7 +153,7 @@ void BoardRenderer::drawHover(sf::RenderWindow& window, Position pos) {
 
 	sf::RectangleShape hoverSquare(sf::Vector2f(squareSize, squareSize));
 
-	hoverSquare.setFillColor(sf::Color(255, 255, 255, 80));
+	hoverSquare.setFillColor(sf::Color(255, 255, 255, 50));
 
 	hoverSquare.setPosition(pos.col * squareSize + offset, pos.row * squareSize + offset);
 
@@ -163,15 +162,15 @@ void BoardRenderer::drawHover(sf::RenderWindow& window, Position pos) {
 
 void BoardRenderer::drawHighlightLastMove(sf::RenderWindow& window, Position fromPos, Position toPos) {
 
-	drawHighlight(window, fromPos, sf::Color(167, 224, 108,80));
+	drawHighlight(window, fromPos, sf::Color(245, 246, 130, 70));
 
-	drawHighlight(window, toPos, sf::Color(167, 224, 108,70));
+	drawHighlight(window, toPos, sf::Color(245, 246, 130, 70));
 
 }
 
 void BoardRenderer::drawKingCheckSquare(sf::RenderWindow& window, Position kingPos) {
 
-	drawHighlight(window, kingPos, sf::Color(255, 0, 0, 150));
+	drawHighlight(window, kingPos, sf::Color(255, 0, 0, 70));
 }
 
 void BoardRenderer::drawValidMove(sf::RenderWindow& window, Position pos,bool isEnemy) {

@@ -3,7 +3,7 @@
 
 	// MoveType enum to categorize different types of moves in chess
 	enum class MoveType {
-		normal, castle, enPassant, promotion, capture, none
+		normal, castle, castleQueenSide, enPassant, promotion, capture, none
 	};
 
 	// GameStatus to represent the various states of the game

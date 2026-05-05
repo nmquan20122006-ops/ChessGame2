@@ -54,4 +54,11 @@ inline sf::Vector2f toPixel(Position pos) {
 	return sf::Vector2f(x, y);
 }
 
+inline std::string moveToNotation(Position pos) {
+
+	char file = 'a' + pos.col;
+	char rank = '8' - pos.row;
+	return std::string(1, file) + rank;
+
+}
 
