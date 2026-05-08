@@ -110,6 +110,17 @@ InformationPanel::Row InformationPanel::createRow(float y) {
 }
 
 void InformationPanel::update(const std::vector<MoveRecord>& moves) {
+
+    if (moves.empty()) {
+        for (auto& row : rows) {
+            row.panel->setVisible(false);
+            row.white->setText("");
+            row.black->setText("");
+            row.num->setText("");
+        }
+        scroll->setContentSize({ 0, 0 });
+        return;
+    }
     int neededRows = (moves.size() + 1) / 2;
 
     while ((int)rows.size() < neededRows) {
@@ -175,11 +186,11 @@ void InformationPanel::updateCapturedList(const std::vector<Piece>& w_Piece, con
     auto render = [&](tgui::Panel::Ptr panel, const std::vector<Piece>& list) {
         if (list.empty()) return;
 
-        float xPos = 5.f;
-        float pieceSize = 60.f;     
-        float spacing = 10.f;
+        float xPos = 0.f;
+        float pieceSize = 50.f;     
+        float spacing = 25.f;
         float panelHeight = panel->getSize().y;
-        float yPos = panelHeight - pieceSize - 5.f;
+        float yPos = panelHeight - pieceSize - 3.f;
 
         for (const auto& piece : list) {
             if (piece == Piece::Empty) continue;
@@ -194,8 +205,8 @@ void InformationPanel::updateCapturedList(const std::vector<Piece>& w_Piece, con
         }
         };
 
-    render(b_capturedPanel, b_Piece);
-    render(w_capturedPanel, w_Piece);
+    render(b_capturedPanel, w_Piece);
+    render(w_capturedPanel, b_Piece);
 }
 
 void InformationPanel::updateLayout(float boardLeftEdgeRatio) {

@@ -20,50 +20,40 @@
 #include <mutex>
 #include <memory>
 
+#include "ChessEngineInterface.h"
 #include "StockfishEngine.h"
 #include "MoveExecutor.h"
-#include "Board.h"
-class Board;
 
-class StockfishGame {
+class StockfishGame :public IChessEngine {
 
 private:
-  
-    std::shared_ptr<Board>          board;
     StockfishEngine                 engine;
     bool                            m_isPlayerWhite;
     std::atomic<bool>               m_gameOver;
     std::atomic<bool>               m_aiStartedThinking;
     std::thread                     aiThread;
     std::mutex                      m_mutex;
-
     std::atomic<bool>               m_isThinking;
     std::atomic<bool>               m_stopThinking;
-
     std::string                     pendingAIMove;
 
 public:
-    StockfishGame(std::shared_ptr<Board> b);
+    explicit StockfishGame();
     ~StockfishGame();
 
-    bool            initAI(const std::wstring& stockfishPath);
-    void            setDifficulty(int level);
+    bool            init(const std::wstring& stockfishPath)override;
+    void            setDifficulty(int level)override;
 
-    void            newGame(bool playerIsWhite = true);
-    void            reset();
+    void            newGame(bool playerIsWhite = true)override;
+    void            reset()override;
 
-    void            startThinking(int thinkingTimeMs);
-    void            stopThinking();
-    bool            isThinking() const { return m_isThinking.load(); }
+    void            startThinking(int thinkingTimeMs)override;
+    void            stopThinking()override;
+    bool            isThinking() const override { return m_isThinking.load(); }
 
-    std::string     getPendingMove();
-    void            syncMove(const std::string& move);
+    std::string     getPendingMove() override;
+    void            syncPosition(const std::string& move)override;
 
-    bool            isGameOver() const { return m_gameOver.load(); }
-    bool            isPlayerWhite() const { return m_isPlayerWhite; }
-
-    static std::string toUCI(const Position& pos);
-    static std::string moveToUCI(const Position& from, const Position& to, char promotion = '\0');
-    static void        fromUCI(const std::string& uci, Position& pos);
+    bool            isGameOver() const override { return m_gameOver.load(); }
 };
 #endif

@@ -15,7 +15,6 @@
 #include"Move.hpp"
 #include"Type.hpp"
 #include"Aistate.hpp"
-#include"Undo.hpp"
 #include"UiState.hpp"
 #include<vector>
 

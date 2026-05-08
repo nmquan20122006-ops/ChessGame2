@@ -21,21 +21,21 @@
 class Board;
 class MoveExecutor;
 class MoveService;
-class StockfishGame;
+class IChessEngine;
 class ChessNotation;
 
 class GameControl {
 public:
-    using MoveEventCallback          = std::function<void(const Move& move)>;
-    using StateChangeCallback        = std::function<void(GameStatus newState)>;
-    using AnimRequest                = std::function<void(Position, Position, Piece, std::function<void()>)>;
+    using MoveEventCallback             = std::function<void(const Move& move)>;
+    using StateChangeCallback           = std::function<void(GameStatus newState)>;
+    using AnimRequest                   = std::function<void(Position, Position, Piece, std::function<void()>)>;
 
 private:
     std::shared_ptr<Board>              board;
     std::unique_ptr<MoveExecutor>       moveExecutor;
     std::shared_ptr<MoveService>        moveService;
     std::shared_ptr<GameState>          gameState;
-    std::unique_ptr<StockfishGame>      stockfishGame;
+    std::unique_ptr<IChessEngine>       chessEngine;
     std::unique_ptr<DumpBot>            dumpBot;
     MoveLog&                            moveLog;
 
@@ -84,7 +84,7 @@ public:
     void             updateAiMove();
     void             preparePromotion(Position fromPos, Position toPos);
     void             resetGame();
-    GameState&       getState()                                            { return *gameState; }
+    GameState&       getState() { return *gameState; }
     bool             isBlocking()const;
 
     MoveExecutor& getMoveExecutor() { return *moveExecutor; }

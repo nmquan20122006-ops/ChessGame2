@@ -62,3 +62,24 @@ inline std::string moveToNotation(Position pos) {
 
 }
 
+inline std::string toUCI(const Position& pos) {
+	char file = 'a' + pos.col;
+	char rank = '8' - pos.row;
+	return std::string(1, file) + rank;
+}
+
+inline void fromUCI(const std::string& uci, Position& pos) {
+	if (uci.length() >= 2) {
+		pos.col = uci[0] - 'a';
+		pos.row = '8' - uci[1];
+	}
+}
+
+inline std::string moveToUCI(const Position& from, const Position& to, char promotion) {
+
+	std::string uci = toUCI(from) + toUCI(to);
+	if (promotion != '\0') {
+		uci += promotion;
+	}
+	return uci;
+}

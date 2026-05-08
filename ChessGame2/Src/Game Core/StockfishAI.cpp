@@ -1,13 +1,12 @@
 ﻿#include "StockfishAI.h"
 
-StockfishGame::StockfishGame(std::shared_ptr<Board> b)
+StockfishGame::StockfishGame()
     : m_isPlayerWhite(true)
     , m_gameOver(false)
     , m_isThinking(false)
     , m_stopThinking(false)
     , m_aiStartedThinking(false) {
 
-    board = b;
 }
 
 StockfishGame::~StockfishGame() {
@@ -15,7 +14,7 @@ StockfishGame::~StockfishGame() {
     engine.stop();
 }
 
-bool StockfishGame::initAI(const std::wstring& stockfishPath) {
+bool StockfishGame::init(const std::wstring& stockfishPath) {
     if (!engine.start(stockfishPath)) {
         std::cerr << "Failed to start Stockfish!" << std::endl;
         return false;
@@ -34,7 +33,6 @@ void StockfishGame::newGame(bool playerIsWhite) {
 
     stopThinking();
 
-    board->initBoard();
     m_isPlayerWhite = playerIsWhite;
     m_gameOver = false;
     m_isThinking = false;
@@ -102,28 +100,6 @@ std::string StockfishGame::getPendingMove() {
     return move;
 }
 
-void StockfishGame::syncMove(const std::string& currentFen) {
+void StockfishGame::syncPosition(const std::string& currentFen) {
     engine.setPosition(currentFen);
-}
-
-std::string StockfishGame::toUCI(const Position& pos) {
-    char file = 'a' + pos.col;
-    char rank = '8' - pos.row;
-    return std::string(1, file) + rank;
-}
-
-void StockfishGame::fromUCI(const std::string& uci, Position& pos) {
-    if (uci.length() >= 2) {
-        pos.col = uci[0] - 'a';
-        pos.row = '8' - uci[1];
-    }
-}
-
-std::string StockfishGame::moveToUCI(const Position& from, const Position& to, char promotion) {
-
-    std::string uci = toUCI(from) + toUCI(to);
-    if (promotion != '\0') {
-        uci += promotion;
-    }
-    return uci;
 }

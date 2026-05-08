@@ -82,7 +82,7 @@ void GameVideo::callBackAll() {
 		});
 
 	EventBus::get().subcribe(GameEvent::MoveRecord, [this] { informationPanel.update(moveLog->getMoveHistoryStack()); updateCapturedPieceList(); });
-	EventBus::get().subcribe(GameEvent::Undo, [this] { informationPanel.update(moveLog->getMoveHistoryStack()); });
+	EventBus::get().subcribe(GameEvent::Undo, [this] { informationPanel.update(moveLog->getMoveHistoryStack()); updateCapturedPieceList(); });
 }
 
 void GameVideo::renderWindow(sf::RenderWindow& window,float dt) {
@@ -153,30 +153,12 @@ void GameVideo::renderHightlight(sf::RenderWindow& window) {
 
 void GameVideo::updateCapturedPieceList() {
 
-	if (!gameControl) {
-		
-		std::cerr << "Warning: gameControl is not initialized yet!" << std::endl;
-		return;
-	}
-
 	auto& moveExecutor = gameControl->getMoveExecutor();
 
 	const auto& whitePieces = moveExecutor.getW_PieceCapture();
 	const auto& blackPieces = moveExecutor.getB_CapturedPiece();
 
-	std::cout << "White captured pieces: " << whitePieces.size() << std::endl;
-	std::cout << "Black captured pieces: " << blackPieces.size() << std::endl;
-
-	for (const auto& piece : whitePieces) {
-		std::cout << "  White captured: " << (int)piece << std::endl;
-	}
-	for (const auto& piece : blackPieces) {
-		std::cout << "  Black captured: " << (int)piece << std::endl;
-	}
-
 	informationPanel.updateCapturedList(whitePieces, blackPieces);
-
-	informationPanel.updateCapturedList(moveExecutor.getW_PieceCapture(), moveExecutor.getB_CapturedPiece());
 }
 
 void GameVideo::renderHighlightLastMove(sf::RenderWindow& window) {

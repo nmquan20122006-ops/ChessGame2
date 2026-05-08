@@ -3,7 +3,6 @@
 #include<vector>
 #include<queue>
 #include<unordered_map>
-
 #include"State/Move.hpp"
 
 class EventBus {

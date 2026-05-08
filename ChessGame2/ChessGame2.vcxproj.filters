@@ -191,9 +191,6 @@
     <ClInclude Include="Include\Core\ToFEN.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Core\State\Undo.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Core\State\UiState.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

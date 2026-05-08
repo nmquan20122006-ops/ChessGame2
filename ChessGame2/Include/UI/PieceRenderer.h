@@ -6,7 +6,6 @@
 #include"Piece.h"
 #include"GameControl.h"
 
-
 class PieceRenderer {
 
 private:

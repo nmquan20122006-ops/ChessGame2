@@ -84,6 +84,15 @@ void MoveExecutor::applyMove(Move& move) {
 
         moveLog.savePrevBoard(move);
 
+        if (move.capturedPiece != Piece::Empty) {
+            if (isWhite(move.capturedPiece)) {
+                W_PieceCapture.push_back(move.capturedPiece);
+            }
+            else {
+                B_PieceCapture.push_back(move.capturedPiece);
+            }
+        }
+
         board->movePiece(move.fromPos, move.toPos);
 
         gameState->setHalfMoveClockCount(halfMoveClockProcess(gameState->getHalfMoveClockCount(), move));
@@ -101,17 +110,13 @@ void MoveExecutor::applyMove(Move& move) {
     if (move.capturedPiece != Piece::Empty) {
         if (isWhite(move.capturedPiece)) {
             W_PieceCapture.push_back(move.capturedPiece);
-            std::cout << "Added to White capture list: " << (int)move.capturedPiece << std::endl;
         }
         else {
             B_PieceCapture.push_back(move.capturedPiece);
-            std::cout << "Added to Black capture list: " << (int)move.capturedPiece << std::endl;
         }
     }
 
-
     moveLog.savePrevBoard(move);
-
     //##########################################
     board->movePiece(move.fromPos, move.toPos);
 
@@ -121,11 +126,21 @@ void MoveExecutor::applyMove(Move& move) {
         return;
     }
     
-   
     gameState->setHalfMoveClockCount(halfMoveClockProcess(gameState->getHalfMoveClockCount(), move));
     gameState->setFullMoveNumberCount(fullMoveNumberProcess(gameState->getFullMoveNumberCount(), gameState->getCurrentTurn()));
 
     board->updateCastleState(piece, move.fromPos, move.toPos, move.capturedPiece);
+}
+
+void MoveExecutor::undoCapturedPiece(Move& move) {
+
+    if (move.capturedPiece != Piece::Empty) {
+        auto& targetList = isWhite(move.capturedPiece) ? W_PieceCapture : B_PieceCapture;
+
+        if (!targetList.empty()) {
+            targetList.pop_back();
+        }
+    }
 }
 
 int MoveExecutor::halfMoveClockProcess(int prevClock, const Move& move) {

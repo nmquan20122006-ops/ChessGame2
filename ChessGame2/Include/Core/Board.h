@@ -89,10 +89,6 @@ struct CastleState {
 	};
 
 class Board {
-
-	friend class Board_DEBUG;
-	friend class BoardToFEN_DEBUG;
-
 private:
 	Piece		 board[8][8] = {};
 	Position	 whiteKingPos, blackKingPos;

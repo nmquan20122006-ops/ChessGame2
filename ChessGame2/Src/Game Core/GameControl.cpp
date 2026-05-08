@@ -15,10 +15,10 @@ GameControl::GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
 	moveService = ms;
 	moveExecutor = std::move(me);
 	
-	stockfishGame = std::make_unique<StockfishGame>(board);
+	chessEngine = std::make_unique<StockfishGame>();
 
 	subscribeToMove([this](const Move& move) {
-		stockfishGame->syncMove(gameState->getCurrentFEN());
+		chessEngine->syncPosition(gameState->getCurrentFEN());
 		});
 }
 
@@ -43,7 +43,6 @@ bool GameControl::requestMove(Position from, Position to) {
 		publishMoveEvent(move);
 		return true;
 	}
-	return true;
 }
 
 void GameControl::publishMoveEvent(Move& move) {
@@ -121,10 +120,6 @@ void GameControl::finalizeMove(Move& move) {
 
 bool GameControl::executePlayerMove(Position from, Position to) {
 
-	if (!moveService->isValidMove(from, to, *board)) {
-		return false;
-	}
-
 	if (animationProvider) {
 
 		gameState->setAnimating(true);
@@ -181,10 +176,10 @@ void GameControl::updateGameState() {
 
 void GameControl::initStockfishGame() {
 
-	stockfishGame->initAI(L"stockfish.exe");
+	chessEngine->init(L"stockfish.exe");
 
-	stockfishGame->setDifficulty(20);
-	stockfishGame->newGame(true);
+	chessEngine->setDifficulty(20);
+	chessEngine->newGame(true);
 
 	gameState->setAiState().isAiEnabled = true;
 	gameState->setAiState().aiTurn = Color::black;
@@ -196,8 +191,8 @@ bool GameControl::executeAiMove(std::string& uciMove) {
 
 	Position from, to;
 
-	StockfishGame::fromUCI(uciMove.substr(0, 2), from);
-	StockfishGame::fromUCI(uciMove.substr(2, 2), to);
+	fromUCI(uciMove.substr(0, 2), from);
+	fromUCI(uciMove.substr(2, 2), to);
 
 	char promotionChar = (uciMove.length() == 5) ? uciMove[4] : '\0';
 
@@ -234,21 +229,22 @@ void GameControl::updateAiMove() {
 
 	if (isBlocking())return;
 
-	std::string uciMove = stockfishGame->getPendingMove();
+	std::string uciMove = chessEngine->getPendingMove();
 
 	if (!uciMove.empty()) {
 
 		executeAiMove(uciMove);
 	}
 	else{
-		stockfishGame->startThinking(2000);
+		chessEngine->startThinking(2000);
 	}
 }
 
 void GameControl::syncAfterUndo(UndoEntry undoEntry) {
 
 	moveLog.syncGame(undoEntry);
-	stockfishGame->syncMove(gameState->getCurrentFEN());
+	chessEngine->syncPosition(gameState->getCurrentFEN());
+
 }
 
 bool GameControl::executeUndoMove() {
@@ -258,6 +254,7 @@ bool GameControl::executeUndoMove() {
 	gameState->setAnimating(true);
 
 	UndoEntry lastEntry = moveLog.popUndo();
+	moveExecutor->undoCapturedPiece(lastEntry.moveBefore);
 
 	Position toPos = lastEntry.moveBefore.toPos;
 	Position fromPos = lastEntry.moveBefore.fromPos;
@@ -268,23 +265,29 @@ bool GameControl::executeUndoMove() {
 		animationProvider(toPos, fromPos, pieceToMoveBack, [this, lastEntry]() {
 			
 			this->syncAfterUndo(lastEntry);
-			EventBus::get().publish(GameEvent::Undo);
 			moveLog.undoHistory();
+
+			EventBus::get().publish(GameEvent::Undo);
+
 			gameState->setAnimating(false);
 
 			if (gameState->getAiState().isAiEnabled &&
+
 				gameState->currentTurn == gameState->getAiState().aiTurn) {
+
 				this->executeUndoMove();
 				
 			}
 			});
 	}
 	else {
-
 		this->syncAfterUndo(lastEntry);
+
 		EventBus::get().publish(GameEvent::Undo);
+
 		if (gameState->getAiState().isAiEnabled &&
 			gameState->currentTurn == gameState->getAiState().aiTurn) {
+
 			this->executeUndoMove();
 		}
 		gameState->setAnimating(false);
@@ -300,15 +303,15 @@ void GameControl::resetGame() {
 
 	gameState->reset();
 
-	stockfishGame->newGame(true);
+	chessEngine->newGame(true);
 
 }
 
 bool GameControl::isBlocking()const {
 
-	return stockfishGame->isThinking() || gameState->getAnimating() == true;
+	return chessEngine->isThinking() || gameState->getAnimating() == true;
 }
 
 void GameControl::stopStockfish() {
-	stockfishGame->stopThinking();
+	chessEngine->stopThinking();
 }

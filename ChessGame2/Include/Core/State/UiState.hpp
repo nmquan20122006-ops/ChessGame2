@@ -2,7 +2,6 @@
 #include"Type.hpp"
 #include"Utility.h"
 
-
 // DragState struct to manage the state of piece dragging in the UI
 struct DragState {
 

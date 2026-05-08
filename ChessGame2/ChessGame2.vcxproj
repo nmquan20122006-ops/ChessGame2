@@ -170,7 +170,6 @@
     <ClInclude Include="Include\Core\State\Move.hpp" />
     <ClInclude Include="Include\Core\State\Type.hpp" />
     <ClInclude Include="Include\Core\State\UiState.hpp" />
-    <ClInclude Include="Include\Core\State\Undo.hpp" />
     <ClInclude Include="Include\Core\ToFEN.h" />
     <ClInclude Include="Include\UI\AnalysisPanel.h" />
     <ClInclude Include="Include\UI\Animation.h" />

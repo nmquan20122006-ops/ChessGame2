@@ -38,6 +38,8 @@ public:
 	int			halfMoveClockProcess(int prevClock, const Move& move);
 	int			fullMoveNumberProcess(int prevClock, const Color currentTurn);
 
+	void		undoCapturedPiece(Move& move);
+
 	const std::vector<Piece>& getW_PieceCapture() const { return W_PieceCapture; }
 	const std::vector<Piece>& getB_CapturedPiece() const { return B_PieceCapture; }
 };
