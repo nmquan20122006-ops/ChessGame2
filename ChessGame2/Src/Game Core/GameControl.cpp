@@ -68,7 +68,6 @@ bool GameControl::requestAiMove(Position from, Position to, char promotionChar) 
 
 	if (promotionChar != '\0' && move.moveType == MoveType::promotion) {
 		move.promotionPiece = ToFEN::charToPiece(gameState->currentTurn, promotionChar);
-		
 	}
 
 	moveExecutor->applyMove(move);
@@ -114,6 +113,8 @@ void GameControl::finalizeMove(Move& move) {
 	gameState->currentFEN = ToFEN::FullFEN(*board, move, *gameState);
 
 	moveLog.record(move);
+
+	EventBus::get().publish(GameEvent::MoveRecord);
 
 	notifyMoveExecuted(move);
 }
@@ -257,19 +258,18 @@ bool GameControl::executeUndoMove() {
 	gameState->setAnimating(true);
 
 	UndoEntry lastEntry = moveLog.popUndo();
-	moveLog.undoHistory();
-
-	EventBus::get().publish(GameEvent::MoveRecord);
 
 	Position toPos = lastEntry.moveBefore.toPos;
 	Position fromPos = lastEntry.moveBefore.fromPos;
+
 	Piece pieceToMoveBack = board->getPiece(toPos);
 
 	if (animationProvider) {
 		animationProvider(toPos, fromPos, pieceToMoveBack, [this, lastEntry]() {
 			
 			this->syncAfterUndo(lastEntry);
-			
+			EventBus::get().publish(GameEvent::Undo);
+			moveLog.undoHistory();
 			gameState->setAnimating(false);
 
 			if (gameState->getAiState().isAiEnabled &&
@@ -282,6 +282,7 @@ bool GameControl::executeUndoMove() {
 	else {
 
 		this->syncAfterUndo(lastEntry);
+		EventBus::get().publish(GameEvent::Undo);
 		if (gameState->getAiState().isAiEnabled &&
 			gameState->currentTurn == gameState->getAiState().aiTurn) {
 			this->executeUndoMove();

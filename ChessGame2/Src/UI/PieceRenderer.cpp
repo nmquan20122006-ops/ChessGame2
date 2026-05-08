@@ -1,8 +1,8 @@
 ﻿#include"PieceRenderer.h"
 
-PieceRenderer::PieceRenderer(std::shared_ptr<GameState>g): gameState(g), baseScale(0.f) {}
+PieceRenderer::PieceRenderer(std::shared_ptr<GameState>g, TextureManager& t): gameState(g), baseScale(0.f), tm(t) {}
 
-void PieceRenderer::setupPieceSprites(TextureManager& tm) {
+void PieceRenderer::setupPieceSprites() {
 
 	sf::Texture& atlas = tm.getTexture("Piecesprite");
 
@@ -152,4 +152,30 @@ sf::Sprite PieceRenderer::getCopySprite(Piece p) {
     int typeIndex = static_cast<int>(getType(p)) - 1;
 
     return pieceSprite[ColorIndex][typeIndex];
+}
+
+sf::Texture& PieceRenderer::getCapturedPieceTexture(Piece piece) {
+
+    int colorOffset = isWhite(piece) ? 0 : 6;
+    int typeIndex = static_cast<int>(getType(piece)) - 1;
+    int finalIndex = colorOffset + typeIndex;
+
+    sf::Texture& capturedAtlast = tm.getTexture("CapturedPieceTexture");
+
+    int row = isWhite(piece) ? 0 : 1;
+    int col = typeIndex;
+    
+    sf::IntRect cutRect(col * FRAME_CAPTURE_SIZE, row * FRAME_CAPTURE_SIZE, FRAME_CAPTURE_SIZE, FRAME_CAPTURE_SIZE);
+
+    sf::Image capturedImage = capturedAtlast.copyToImage();
+    sf::Image pieceCapturedImage;
+    pieceCapturedImage.create(FRAME_CAPTURE_SIZE, FRAME_CAPTURE_SIZE);
+    pieceCapturedImage.copy(capturedImage, 0, 0, cutRect);
+
+    pieceCapturedTexture[finalIndex].loadFromImage(pieceCapturedImage);
+    pieceCapturedTexture[finalIndex].setSmooth(true);
+    pieceCapturedTexture[finalIndex].generateMipmap();
+
+    return pieceCapturedTexture[finalIndex];
+
 }

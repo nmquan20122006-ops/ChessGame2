@@ -9,19 +9,22 @@
 
 class PieceRenderer {
 
-private:	
+private:
 	sf::Sprite pieceSprite[2][6]; //mảng sprite cho 2 màu và 6 loại quân cờ
+	sf::Texture pieceCapturedTexture[12];
 
 	std::shared_ptr<GameState> gameState;
 
 	std::set<Position> m_excludedPositions;
 
+	TextureManager& tm;
+
 	float baseScale;
 
 public:
-	PieceRenderer(std::shared_ptr<GameState> g);
+	PieceRenderer(std::shared_ptr<GameState> g, TextureManager& t);
 
-	void setupPieceSprites(TextureManager& tm);
+	void setupPieceSprites();
 
 	void drawPiece(sf::RenderWindow& window, Position pos, const Board& board);
 
@@ -34,6 +37,8 @@ public:
 	sf::Sprite& getSpriteForPiece(Piece p);
 
 	sf::Sprite getCopySprite(Piece p);
+
+	sf::Texture& getCapturedPieceTexture(Piece p);
 
 	float getBaseScale()const { return baseScale; }
 

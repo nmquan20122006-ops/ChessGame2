@@ -27,6 +27,9 @@ private:
 	MoveType	implementPromotion(Move& move, Piece& piece);
 	MoveType	implementEnPassant(Move& move, Piece& piece);
 
+	std::vector<Piece> W_PieceCapture;
+	std::vector<Piece> B_PieceCapture;
+
 public:
 	MoveExecutor(std::shared_ptr<Board> b, std::shared_ptr<GameState> g, MoveLog& m);
 
@@ -34,4 +37,7 @@ public:
 
 	int			halfMoveClockProcess(int prevClock, const Move& move);
 	int			fullMoveNumberProcess(int prevClock, const Color currentTurn);
+
+	const std::vector<Piece>& getW_PieceCapture() const { return W_PieceCapture; }
+	const std::vector<Piece>& getB_CapturedPiece() const { return B_PieceCapture; }
 };

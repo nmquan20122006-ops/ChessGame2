@@ -8,7 +8,6 @@ bool TextureManager::loadTexture(const std::string& name, const std::string& fil
 	}
 
 	textures_map[name] = texture;
-
 	textures_map[name].setSmooth(true);
 	textures_map[name].generateMipmap();
 	return true;
@@ -54,6 +53,7 @@ void TextureManager::defineFrame(const std::string& name, int left, int top) {
 	frames_map[name] = sf::IntRect(left, top, FRAME_SIZE, FRAME_SIZE);
 }
 
+
 void TextureManager::setupChessAtlas() {
 
 	std::string pieceNames[6] = { "Pawn","Rook","Knight","Bishop","Queen","King" };
@@ -90,5 +90,6 @@ void TextureManager::initTexture() {
 	loadTexture("Minecraft Enchanted Netherite Sword", "Assets/Minecraft Enchanted Netherite Sword.png");
 	loadTexture("AnalysisPanel", "Assets/AnalysisPanel.png");
 	loadFont("font", "Assets/font1.ttf");
+	loadTexture("CapturedPieceTexture", "Assets/CapturedPiece.png");
 
 }

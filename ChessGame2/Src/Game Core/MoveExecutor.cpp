@@ -98,9 +98,21 @@ void MoveExecutor::applyMove(Move& move) {
         return;
     }
 
+    if (move.capturedPiece != Piece::Empty) {
+        if (isWhite(move.capturedPiece)) {
+            W_PieceCapture.push_back(move.capturedPiece);
+            std::cout << "Added to White capture list: " << (int)move.capturedPiece << std::endl;
+        }
+        else {
+            B_PieceCapture.push_back(move.capturedPiece);
+            std::cout << "Added to Black capture list: " << (int)move.capturedPiece << std::endl;
+        }
+    }
+
+
     moveLog.savePrevBoard(move);
 
-
+    //##########################################
     board->movePiece(move.fromPos, move.toPos);
 
     if (implementPromotion(move, piece) == MoveType::promotion) {
@@ -108,7 +120,8 @@ void MoveExecutor::applyMove(Move& move) {
         board->updateCastleState(piece, move.fromPos, move.toPos, move.capturedPiece);
         return;
     }
-
+    
+   
     gameState->setHalfMoveClockCount(halfMoveClockProcess(gameState->getHalfMoveClockCount(), move));
     gameState->setFullMoveNumberCount(fullMoveNumberProcess(gameState->getFullMoveNumberCount(), gameState->getCurrentTurn()));
 

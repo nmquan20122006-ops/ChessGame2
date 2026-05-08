@@ -162,15 +162,15 @@ void BoardRenderer::drawHover(sf::RenderWindow& window, Position pos) {
 
 void BoardRenderer::drawHighlightLastMove(sf::RenderWindow& window, Position fromPos, Position toPos) {
 
-	drawHighlight(window, fromPos, sf::Color(245, 246, 130, 70));
+	drawHighlight(window, fromPos, sf::Color(245, 246, 130, 40));
 
-	drawHighlight(window, toPos, sf::Color(245, 246, 130, 70));
+	drawHighlight(window, toPos, sf::Color(245, 246, 130, 40));
 
 }
 
 void BoardRenderer::drawKingCheckSquare(sf::RenderWindow& window, Position kingPos) {
 
-	drawHighlight(window, kingPos, sf::Color(255, 0, 0, 70));
+	drawHighlight(window, kingPos, sf::Color(255, 0, 0, 40));
 }
 
 void BoardRenderer::drawValidMove(sf::RenderWindow& window, Position pos,bool isEnemy) {

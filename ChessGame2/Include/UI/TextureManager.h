@@ -1,9 +1,10 @@
 #pragma once
 #include"SFML/Graphics.hpp"
 #include"SFML/Audio.hpp"
-
+#include"Piece.h"
 
 const int FRAME_SIZE = 333;
+const int FRAME_CAPTURE_SIZE = 80;
 
 class TextureManager {
 
@@ -14,6 +15,7 @@ private:
 	std::map<std::string, std::unique_ptr<sf::Font>> font_map;
 	std::map<std::string, sf::Texture> textures_map;
 	std::map<std::string, sf::IntRect> frames_map;
+	std::map<std::string, sf::IntRect> frames_captured_map;
 
 public:
 	bool loadTexture(const std::string& name, const std::string& filename);
@@ -23,6 +25,7 @@ public:
 	sf::Font& getFont(const std::string& name);
 
 	void defineFrame(const std::string& name, int left, int top);
+	void defineFrameForCaptured(const std::string& name, int left, int top);
 	void setupChessAtlas();
 
 	void initTexture();

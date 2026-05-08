@@ -79,7 +79,7 @@ public:
 
 	void callBackAll();
 
-	void refreshMoveHistory();
+	void updateCapturedPieceList();
 
 	void loadTextureForMember();
 

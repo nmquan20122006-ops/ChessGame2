@@ -1,148 +1,213 @@
-﻿#include"InformationPanel.h"
+﻿#include "InformationPanel.h"
 #include"MoveLog.h"
-#include"TextureManager.h"
+#include"EventBus.h"
+#include"PieceRenderer.h"
 
-InformationPanel::InformationPanel(tgui::GuiSFML& gui) {
+InformationPanel::InformationPanel(tgui::GuiSFML& gui, PieceRenderer& t): pieceRenderer(t) { initCapturedPanel(gui);}
 
-    panel = tgui::Panel::create();
-    panel->getRenderer()->setBackgroundColor({ 40, 36, 33 });
-    panel->getRenderer()->setRoundedBorderRadius(12);
-    gui.add(panel);
+void InformationPanel::initCapturedPanel(tgui::GuiSFML& gui) {
+    
+    w_capturedPanel = tgui::Panel::create();
+    b_capturedPanel = tgui::Panel::create();
+    root = tgui::Panel::create();
 
-    titleLabel = tgui::Label::create();
-    titleLabel->setText("");
-    titleLabel->setTextSize(25);
-    titleLabel->setPosition("50%", "6");
-    titleLabel->getRenderer()->setTextColor({ 200, 170, 110,100 });
-    titleLabel->setSize("100%", "50");
-    titleLabel->setHorizontalAlignment(tgui::Label::HorizontalAlignment::Center);
-    titleLabel->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
-    titleLabel->setPosition(0, 0);
-    panel->add(titleLabel);
+    root->getRenderer()->setBackgroundColor(tgui::Color::Transparent);
+    gui.add(root);
 
-    scrollPanel = tgui::ScrollablePanel::create();
-    scrollPanel->setPosition("0%", "40");
-    scrollPanel->setSize("100%", "50%");
-    scrollPanel->getRenderer()->setScrollbarWidth(8);
+    auto bg = tgui::Panel::create();
+    bg->setPosition(0, "(parent.height) / 4+ 2,5% ");
+    bg->setSize("100%", "50% - 40");
+    bg->getRenderer()->setBackgroundColor({ 32,30,27 });
+    bg->getRenderer()->setRoundedBorderRadius(10);
+    root->add(bg);
 
-    auto renderer = scrollPanel->getRenderer();
-    renderer->setBackgroundColor({ 30, 27, 24 }); 
-    renderer->setPadding({ 10,10,10,10 });
-    renderer->setScrollbarWidth(8);
+    scroll = tgui::ScrollablePanel::create();
+    scroll->setPosition(2, 0);
+    scroll->setSize("100% - 10", "100% - 10");
+    scroll->getRenderer()->setBackgroundColor(tgui::Color::Transparent);
+    scroll->getRenderer()->setScrollbarWidth(0);
+    scroll->setHorizontalScrollbarPolicy(tgui::Scrollbar::Policy::Never);
 
-    tgui::ScrollbarRenderer scrollbarRenderer(scrollPanel->getRenderer()->getScrollbar());
-    scrollbarRenderer.setThumbColor({ 80, 70, 60 });
-    scrollbarRenderer.setTrackColor({ 40, 36, 33 });
-    scrollbarRenderer.setArrowBackgroundColor({ 40, 36, 33 });
-    scrollbarRenderer.setArrowColor({ 80, 70, 60 });
-    panel->add(scrollPanel);
+    bg->add(scroll);
 
-    grid = tgui::Grid::create();
-    grid->setPosition(0, 0);
-    scrollPanel->add(grid);
+    b_capturedPanel->setPosition(0, 0);
+    b_capturedPanel->setSize("100%", "25%");
+    b_capturedPanel->getRenderer()->setBackgroundColor({ 32,30,27 });
+    b_capturedPanel->getRenderer()->setRoundedBorderRadius(10);
+
+    root->add(b_capturedPanel);
+
+    w_capturedPanel->setPosition(0, "parent.height - height");
+    w_capturedPanel->setSize("100%","25%");
+    w_capturedPanel->getRenderer()->setBackgroundColor({ 32,30,27 });
+    w_capturedPanel->getRenderer()->setRoundedBorderRadius(10);
+
+    root->add(w_capturedPanel);
 }
 
 void InformationPanel::setFont(const std::string& filePath) {
     tguiFont = tgui::Font(filePath);
 }
 
-void InformationPanel::updateMoveHistory(const std::vector<MoveRecord>& records) {
+InformationPanel::Row InformationPanel::createRow(float y) {
+    Row r;
+    float W = scroll->getSize().x;
 
-    grid->removeAllWidgets();
+    float wNum = W * 0.15f;
+    float wMove = W * 0.40f; 
 
-    float panelW    = scrollPanel->getSize().x;
-    float numW      = 40.f;
-    float moveW = (panelW - numW) / 2.f - 10.f;
+    float xNum = 5.f;
+    float xW = xNum + wNum;
+    float xB = xW + wMove + 5.f; 
 
-    auto makeNumLabel = [&](const std::string& text) {
-        auto label = tgui::Label::create();
-        label->setText(text);
-        label->setTextSize(14);
-        label->getRenderer()->setFont(tguiFont);
-        label->getRenderer()->setTextColor({ 100, 100, 100 });
-        label->getRenderer()->setPadding({ 0, 0, 0, 0 });
-        label->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
-        label->setHorizontalAlignment(tgui::Label::HorizontalAlignment::Center);
-        label->setSize(numW,30);
-        return label;
-    };
+    r.panel = tgui::Panel::create({ W, rowHeight });
+    r.panel->setPosition(0, y);
+    r.panel->getRenderer()->setBackgroundColor(tgui::Color::Transparent);
 
-    auto makeMoveLabel = [&,this](const std::string& text, bool isLast) {
-        auto label = tgui::Label::create();
-        label->setText(text);
-        label->setTextSize(14);
-        label->getRenderer()->setFont(tguiFont);
-        label->getRenderer()->setPadding({ 14, 0, 14, 0 });
-        label->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
-        label->setHorizontalAlignment(tgui::Label::HorizontalAlignment::Center); 
-        
-        label->setSize(moveW,30);
+    r.whiteBg = tgui::Panel::create({ wMove, rowHeight * 0.8f });
+    r.whiteBg->setPosition(xW, rowHeight * 0.05f);
+    r.whiteBg->getRenderer()->setBackgroundColor(tgui::Color::Transparent);
+    r.whiteBg->getRenderer()->setRoundedBorderRadius(6);
 
-        if (isLast) {
-            label->getRenderer()->setBackgroundColor({ 219, 196, 68, 20 });
-            label->getRenderer()->setTextColor({ 255, 255, 255 });
-        } else {
-            
-            label->getRenderer()->setTextColor({ 180, 180, 180 });
-        }
-        return label;
-    };
+    r.blackBg = tgui::Panel::create({ wMove, rowHeight * 0.9f });
+    r.blackBg->setPosition(xB, rowHeight * 0.05f);
+    r.blackBg->getRenderer()->setBackgroundColor(tgui::Color::Transparent);
+    r.blackBg->getRenderer()->setRoundedBorderRadius(6);
 
-    for (int i = 0; i < (int)records.size(); i += 2) {
-        int row          = (i / 2);
-        std::string num  = std::to_string(row + 1) + ".";
-        std::string wSAN = records[i].san;
-        std::string bSAN = (i + 1 < (int)records.size()) ? records[i + 1].san : "";
+    // KHỞI TẠO LABEL
+    r.num = tgui::Label::create();
+    r.white = tgui::Label::create();
+    r.black = tgui::Label::create();
 
-        int  lastIdx = (int)records.size() - 1;
-        bool wIsLast = (i == lastIdx);
-        bool bIsLast = (i + 1 == lastIdx);
-
-        tgui::Color rowBg = (row % 2 == 0)
-            ? tgui::Color{ 255, 255, 255, 10 }
-            : tgui::Color{ 0, 0, 0, 10 };
-
-        auto numLabel   = makeNumLabel(num);
-        auto whiteLabel = makeMoveLabel(wSAN, wIsLast);
-        auto blackLabel = makeMoveLabel(bSAN, bIsLast);
-
-        numLabel->getRenderer()->setBackgroundColor(rowBg);
-        if (!wIsLast) whiteLabel->getRenderer()->setBackgroundColor(rowBg);
-        if (!bIsLast) blackLabel->getRenderer()->setBackgroundColor(rowBg);
-
-        grid->addWidget(numLabel,   row, 0);
-        grid->addWidget(whiteLabel, row, 1);
-        grid->addWidget(blackLabel, row, 2);
+    for (auto lbl : { r.num, r.white, r.black }) {
+        lbl->setSize("100%", "100%");
+        lbl->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
+        lbl->setTextSize(15);
+        if (tguiFont) lbl->getRenderer()->setFont(tguiFont);
     }
 
-    scrollPanel->setVerticalScrollbarValue(100);
+    r.num->setPosition(xNum, 0);
+    r.num->setSize(wNum, "100%");
+    r.num->getRenderer()->setTextColor({ 110,105,100 });
 
+    r.white->setHorizontalAlignment(tgui::Label::HorizontalAlignment::Center);
+    r.black->setHorizontalAlignment(tgui::Label::HorizontalAlignment::Center);
+
+    r.panel->add(r.num);
+    r.panel->add(r.whiteBg);
+    r.panel->add(r.blackBg);
+    r.whiteBg->add(r.white);
+    r.blackBg->add(r.black);
+
+    auto line = tgui::SeparatorLine::create();
+    line->setSize("100%", 1);
+    line->setPosition(0, rowHeight - 1);
+    line->getRenderer()->setColor({ 45, 42, 38 });
+    r.panel->add(line);
+
+    scroll->add(r.panel);
+    return r;
 }
-void InformationPanel::clear() {
-    grid->removeAllWidgets();
+
+void InformationPanel::update(const std::vector<MoveRecord>& moves) {
+    int neededRows = (moves.size() + 1) / 2;
+
+    while ((int)rows.size() < neededRows) {
+        float y = startY + rows.size() * rowHeight;
+        rows.push_back(createRow(y));
+    }
+
+    for (int i = 0; i < neededRows; i++) {
+        int idx = i * 2;
+
+        auto& row = rows[i];
+
+        row.whiteBg->getRenderer()->setBackgroundColor(tgui::Color::Transparent);
+        row.blackBg->getRenderer()->setBackgroundColor(tgui::Color::Transparent);
+
+        row.panel->setVisible(true);
+
+        row.num->setText(std::to_string(i + 1) + ".");
+
+        row.white->getRenderer()->setTextColor({ 195,190,185 });
+        row.black->getRenderer()->setTextColor({ 195,190,185 });
+
+        // white
+        row.white->setText(moves[idx].san);
+
+        // black
+        if (idx + 1 < (int)moves.size()) {
+            row.black->setText(moves[idx + 1].san);
+        }
+        else {
+            row.black->setText("");
+        }
+    }
+
+    if (!moves.empty()) {
+        int lastIdx = moves.size() - 1;
+        int r = lastIdx / 2;
+        if (lastIdx % 2 == 0) {
+            rows[r].whiteBg->getRenderer()->setBackgroundColor({ 245, 220, 0, 20 });
+            rows[r].white->getRenderer()->setTextColor(tgui::Color::White);
+        }
+        else {
+            rows[r].blackBg->getRenderer()->setBackgroundColor({ 245, 220, 0, 20 });
+            rows[r].black->getRenderer()->setTextColor(tgui::Color::White);
+        }
+
+        for (int i = neededRows; i < (int)rows.size(); i++) {
+            rows[i].panel->setVisible(false);
+        }
+
+        float totalHeight = startY + neededRows * rowHeight;
+        scroll->setContentSize({ 0, totalHeight });
+        scroll->setVerticalScrollbarValue(20000);
+    }
+}
+
+void InformationPanel::updateCapturedList(const std::vector<Piece>& w_Piece, const std::vector<Piece>& b_Piece) {
+    if (!w_capturedPanel || !b_capturedPanel) return;
+
+    w_capturedPanel->removeAllWidgets();
+    b_capturedPanel->removeAllWidgets();
+
+    auto render = [&](tgui::Panel::Ptr panel, const std::vector<Piece>& list) {
+        if (list.empty()) return;
+
+        float xPos = 5.f;
+        float pieceSize = 60.f;     
+        float spacing = 10.f;
+        float panelHeight = panel->getSize().y;
+        float yPos = panelHeight - pieceSize - 5.f;
+
+        for (const auto& piece : list) {
+            if (piece == Piece::Empty) continue;
+
+            sf::Texture& sfTex = pieceRenderer.getCapturedPieceTexture(piece);
+            auto pic = tgui::Picture::create(tgui::Texture(sfTex));
+            pic->setSize(pieceSize, pieceSize); 
+            pic->setPosition(xPos, yPos);
+
+            panel->add(pic);
+            xPos += spacing;
+        }
+        };
+
+    render(b_capturedPanel, b_Piece);
+    render(w_capturedPanel, w_Piece);
 }
 
 void InformationPanel::updateLayout(float boardLeftEdgeRatio) {
+    if (!root) return;
+    root->setVisible(boardLeftEdgeRatio >= 0.15f);
+    if (!root->isVisible()) return;
+      
+    root->setPosition({ 15, 15 });
 
-	if (!panel)return;
-
-	if (boardLeftEdgeRatio < 0.15f) {
-		panel->setVisible(false);
-		return;
-	}
-
-	panel->setVisible(true);
-
-	int margin = 15;
-
-	std::string posX = std::to_string(margin);
-	std::string width = std::to_string(boardLeftEdgeRatio * 100.f) + "% - " + std::to_string(margin * 2);
-
-	std::string posY = std::to_string(margin);
-	std::string height = "100% - " + std::to_string(margin * 2);
-
-	panel->setPosition(posX.c_str(), posY.c_str());
-	panel->setSize(width.c_str(), height.c_str());
-
+    float wPercent = boardLeftEdgeRatio * 100.f;
+    root->setSize({
+        tgui::Layout(std::to_string(wPercent) + "% - 30"),
+        tgui::Layout("100% - 30")
+        });
 }
-

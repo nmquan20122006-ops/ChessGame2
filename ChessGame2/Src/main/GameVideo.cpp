@@ -6,12 +6,13 @@ GameVideo::GameVideo() :
 	window				(sf::VideoMode(windowWidth, windowHeight), "Chess"),
 	gui					(window),
 	analysisPanel		(gui),
-	informationPanel	(gui),
+	textureManager		(),
 	board				(std::make_shared<Board>()),
 	state				(std::make_shared<GameState>()),
 	moveService			(std::make_shared<MoveService>()),
 	uiManager			(windowSize, analysisPanel),
-	pieceRender			(state),
+	pieceRender			(state,textureManager),
+	informationPanel	(gui, pieceRender),
 	audio				(),
 	chessNotation		(),
 	moveLog				(std::make_shared<MoveLog>(board, state, chessNotation, moveService))
@@ -79,20 +80,9 @@ void GameVideo::callBackAll() {
 			if (onComplete) onComplete();
 			});
 		});
-	EventBus::get().subcribe(GameEvent::Move, [this] { refreshMoveHistory(); });
-	EventBus::get().subcribe(GameEvent::Capture, [this] { refreshMoveHistory(); });
-	EventBus::get().subcribe(GameEvent::EnPassant, [this] {refreshMoveHistory(); });
-	EventBus::get().subcribe(GameEvent::Castle, [this] {refreshMoveHistory(); });
-	EventBus::get().subcribe(GameEvent::CastleQueenSide, [this] {refreshMoveHistory(); });
-	EventBus::get().subcribe(GameEvent::Promotion, [this] {refreshMoveHistory(); });
-	EventBus::get().subcribe(GameEvent::Check, [this] { refreshMoveHistory(); });
-	EventBus::get().subcribe(GameEvent::CheckMate, [this] { refreshMoveHistory(); });
-	EventBus::get().subcribe(GameEvent::MoveRecord, [this] { refreshMoveHistory(); });
-}
 
-void GameVideo::refreshMoveHistory() {
-
-	informationPanel.updateMoveHistory(moveLog->getMoveHistoryStack());
+	EventBus::get().subcribe(GameEvent::MoveRecord, [this] { informationPanel.update(moveLog->getMoveHistoryStack()); updateCapturedPieceList(); });
+	EventBus::get().subcribe(GameEvent::Undo, [this] { informationPanel.update(moveLog->getMoveHistoryStack()); });
 }
 
 void GameVideo::renderWindow(sf::RenderWindow& window,float dt) {
@@ -140,7 +130,7 @@ void GameVideo::loadTextureForMember() {
 
 	textureManager.setupChessAtlas();
 
-	pieceRender.setupPieceSprites(textureManager);
+	pieceRender.setupPieceSprites();
 
 	boardRenderer.initFont(textureManager.getFont("font"));
 
@@ -159,6 +149,34 @@ void GameVideo::renderHightlight(sf::RenderWindow& window) {
 		boardRenderer.drawHighlight(window, state.getSelectPos(), sf::Color(186, 202, 43, 70));
 	}
 
+}
+
+void GameVideo::updateCapturedPieceList() {
+
+	if (!gameControl) {
+		
+		std::cerr << "Warning: gameControl is not initialized yet!" << std::endl;
+		return;
+	}
+
+	auto& moveExecutor = gameControl->getMoveExecutor();
+
+	const auto& whitePieces = moveExecutor.getW_PieceCapture();
+	const auto& blackPieces = moveExecutor.getB_CapturedPiece();
+
+	std::cout << "White captured pieces: " << whitePieces.size() << std::endl;
+	std::cout << "Black captured pieces: " << blackPieces.size() << std::endl;
+
+	for (const auto& piece : whitePieces) {
+		std::cout << "  White captured: " << (int)piece << std::endl;
+	}
+	for (const auto& piece : blackPieces) {
+		std::cout << "  Black captured: " << (int)piece << std::endl;
+	}
+
+	informationPanel.updateCapturedList(whitePieces, blackPieces);
+
+	informationPanel.updateCapturedList(moveExecutor.getW_PieceCapture(), moveExecutor.getB_CapturedPiece());
 }
 
 void GameVideo::renderHighlightLastMove(sf::RenderWindow& window) {

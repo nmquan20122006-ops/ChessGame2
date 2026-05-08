@@ -33,5 +33,5 @@ struct BotMove {
 
 enum class GameEvent {
 	Move, Capture, Select, Check, CheckMate, Promotion,
-	UnValidMove, EnPassant, Castle, CastleQueenSide, MoveRecord
+	UnValidMove, EnPassant, Castle, CastleQueenSide, MoveRecord, Undo
 };

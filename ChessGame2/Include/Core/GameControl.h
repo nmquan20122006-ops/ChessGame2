@@ -76,7 +76,9 @@ public:
     //====================================================================
     void             syncAfterUndo(UndoEntry undoEntry);
     void             finalizeMove(Move& move);
-
+    //====================================================================
+    //sync
+    //====================================================================
     void             initStockfishGame();
     void             stopStockfish();
     void             updateAiMove();
@@ -85,4 +87,5 @@ public:
     GameState&       getState()                                            { return *gameState; }
     bool             isBlocking()const;
 
+    MoveExecutor& getMoveExecutor() { return *moveExecutor; }
 };
