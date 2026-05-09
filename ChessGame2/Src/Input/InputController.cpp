@@ -57,6 +57,8 @@ void InputController::handleEvent(sf::RenderWindow& window, sf::Event& e, const 
 
 	if (e.type == sf::Event::KeyPressed) {
 
+		if (e.key.code == sf::Keyboard::L)gameControl->executeHint();
+
 	}
 
 }

@@ -30,31 +30,26 @@ private:
     StockfishEngine                 engine;
     bool                            m_isPlayerWhite;
     std::atomic<bool>               m_gameOver;
-    std::atomic<bool>               m_aiStartedThinking;
-    std::thread                     aiThread;
+    std::thread                     engineThread;
     std::mutex                      m_mutex;
     std::atomic<bool>               m_isThinking;
     std::atomic<bool>               m_stopThinking;
-    std::string                     pendingAIMove;
+    std::string                     pendingEngineMove;
 
 public:
     explicit StockfishGame();
     ~StockfishGame();
 
-    bool            init(const std::wstring& stockfishPath)override;
-    void            setDifficulty(int level)override;
-
-    void            newGame(bool playerIsWhite = true)override;
-    void            reset()override;
-
-    void            startThinking(int thinkingTimeMs)override;
-    void            stopThinking()override;
-    bool            isThinking() const override { return m_isThinking.load(); }
-
-    std::string     getPendingMove() override;
-    void            goDepth(int depth) override;
-    void            syncPosition(const std::string& move)override;
-
-    bool            isGameOver() const override { return m_gameOver.load(); }
+    bool                            init(const std::wstring& stockfishPath)override;
+    void                            setDifficulty(int level)override;
+    void                            newGame(bool playerIsWhite = true)override;
+    void                            reset()override;
+    void                            startThinking(int thinkingTimeMs)override;
+    void                            stopThinking()override;
+    bool                            isThinking() const override { return m_isThinking.load(); }
+    std::string                     getPendingMove() override;
+    void                            goDepth(int depth) override;
+    void                            syncPosition(const std::string& move)override;
+    bool                            isGameOver() const override { return m_gameOver.load(); }
 };
 #endif

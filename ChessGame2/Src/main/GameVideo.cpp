@@ -39,11 +39,6 @@ GameVideo::GameVideo() :
 void GameVideo::initAll(){
 
 	EngineConfig config;
-	config.Path = L"stockfish.exe";
-	config.difficulty = 20;
-	config.thinkingMs = 2000;
-	config.turn = Color::black;
-	config.enabled = true;
 
 	textureManager.initTexture();
 	audio.initSound();
@@ -71,7 +66,7 @@ void GameVideo::callBackAll() {
 		});
 
 	inputHandler->setOnGetPendingTo([&]() {
-		return state->getPendingTo();  // ← GameControl hỏi PromotionController
+		return state->getPendingTo(); 
 		});
 
 	gameControl->setAnimationProvider([this](Position from, Position to, Piece piece, std::function<void()> onComplete) {
@@ -114,15 +109,17 @@ void GameVideo::renderWindow(sf::RenderWindow& window,float dt) {
 
 	renderHighlightLastMove(window);
 
+	renderHintPosition(window);
+
 	renderCheckSquare(window);
 
 	renderHightlight(window);
 
-	renderHighlightValidMove(window);
-
 	pieceRender.renderAll(window,*board);
 
 	renderPromotionPanel(window);
+
+	renderHighlightValidMove(window);
 
 	animator.render(window);
 
@@ -174,6 +171,12 @@ void GameVideo::updateCapturedPieceList() {
 	const auto& blackPieces = moveExecutor.getB_CapturedPiece();
 
 	informationPanel.updateCapturedList(whitePieces, blackPieces);
+}
+
+void GameVideo::renderHintPosition(sf::RenderWindow& window) {
+
+	boardRenderer.drawHintLine(window, state->getHintPosition().from, state->getHintPosition().to);
+
 }
 
 void GameVideo::renderHighlightLastMove(sf::RenderWindow& window) {

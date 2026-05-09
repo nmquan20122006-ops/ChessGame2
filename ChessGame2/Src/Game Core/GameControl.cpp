@@ -24,25 +24,10 @@ GameControl::GameControl(
 	m_promotionController = std::make_unique<PromotionController>(m_board, m_gameState, m_moveService, *m_moveExecutor);
 	m_chessEngineController = std::make_unique<ChessEngineController>(m_board, m_gameState, m_moveService);
 
-	m_chessEngineController->setOnMoveReady([this](Move& move) {
-		if (m_animationProvider) {
-			m_gameState->setAnimating(true);
-			Piece piece = m_board->getPiece(move.fromPos);
-
-			m_animationProvider(move.fromPos, move.toPos, piece,
-				[this, move]() mutable {
-					m_moveExecutor->applyMove(move);
-					finalizeMove(move);
-					publishMoveEvent(move);
-					m_gameState->setAnimating(false);
-				});
-		}
-		else {
-			m_moveExecutor->applyMove(move);
-			finalizeMove(move);
-			publishMoveEvent(move);
-		}
+	m_chessEngineController->setOnHintReady([this](Position from, Position to) {
+		m_gameState->setHintPosition(from, to);
 		});
+	executeEngineMove();
 
 	subscribeToMove([this](const Move& move) {
 		m_chessEngineController->syncPosition(m_gameState->getCurrentFEN());
@@ -150,9 +135,40 @@ void GameControl::notifyStateChanged(const GameStatus& newState) {
 	}
 }
 
+void GameControl::executeEngineMove() {
+
+	m_chessEngineController->setOnMoveReady([this](Move& move) {
+
+		if (m_animationProvider) {
+
+			m_gameState->setAnimating(true);
+			Piece piece = m_board->getPiece(move.fromPos);
+
+			m_animationProvider(move.fromPos, move.toPos, piece,
+				[this, move]() mutable {
+					m_moveExecutor->applyMove(move);
+					finalizeMove(move);
+					publishMoveEvent(move);
+					m_gameState->setAnimating(false);
+				});
+		}
+		else {
+			m_moveExecutor->applyMove(move);
+			finalizeMove(move);
+			publishMoveEvent(move);
+		}
+		});
+}
+
+void GameControl::executeHint() {
+	m_chessEngineController->requestHint();
+}
+
 void GameControl::updateGameState() {
 
 	m_gameState->switchTurn();
+
+	m_gameState->clearHintPosition();
 
 	const auto& Turn = m_gameState->getCurrentTurn();
 
@@ -229,7 +245,8 @@ bool GameControl::executeUndoMove() {
 }
 
 bool GameControl::isBlocking() const {
-	return m_chessEngineController->isThinking() && m_gameState->getAnimating();
+
+	return m_chessEngineController->isThinking() || m_gameState->getAnimating();
 }
 
 void GameControl::resetGame() {
@@ -243,4 +260,3 @@ void GameControl::resetGame() {
 	m_chessEngineController->newGame();
 
 }
-

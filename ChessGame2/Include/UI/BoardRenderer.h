@@ -28,6 +28,8 @@ private:
 
 	sf::Sprite cursorSprite;
 
+	sf::VertexArray m_hintArrow;
+
 public:
 	BoardRenderer();
 
@@ -59,4 +61,7 @@ public:
 
 	void initFont(sf::Font& font);
 
+	void drawHintLine(sf::RenderWindow& window, Position from, Position to);
+
+	void drawArrow(sf::RenderWindow& window,sf::Vector2f from,sf::Vector2f to);
 };

@@ -72,6 +72,8 @@ public:
 	void renderCheckSquare(sf::RenderWindow& window);
 
 	void renderPromotionPanel(sf::RenderWindow& window);
+	
+	void renderHintPosition(sf::RenderWindow& window);
 
 	void changeCursor(sf::RenderWindow& window);
 

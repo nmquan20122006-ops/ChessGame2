@@ -4,8 +4,7 @@ StockfishGame::StockfishGame()
     : m_isPlayerWhite(true)
     , m_gameOver(false)
     , m_isThinking(false)
-    , m_stopThinking(false)
-    , m_aiStartedThinking(false) {
+    , m_stopThinking(false){
 
 }
 
@@ -31,13 +30,29 @@ void StockfishGame::setDifficulty(int level) {
 
 void StockfishGame::goDepth(int depth) {
 
-    if (m_isThinking || m_aiStartedThinking || m_gameOver) return;
+    if (m_isThinking || m_gameOver) return;
 
-    m_aiStartedThinking = true;
     m_isThinking = true;
     m_stopThinking = false;
-
     
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        pendingEngineMove.clear();
+    }
+    if (engineThread.joinable()) {
+        engineThread.join();
+    }
+    
+    engineThread = std::thread([this, depth]() {
+        std::string uciMove = engine.getBestMoveByDepth(depth);
+
+        if (!m_stopThinking && !uciMove.empty()) {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            pendingEngineMove = uciMove;
+        }
+
+        m_isThinking = false;
+        });
 }
 
 void StockfishGame::newGame(bool playerIsWhite) {
@@ -48,11 +63,10 @@ void StockfishGame::newGame(bool playerIsWhite) {
     m_gameOver = false;
     m_isThinking = false;
     m_stopThinking = false;
-    m_aiStartedThinking = false;
 
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        pendingAIMove.clear();
+        pendingEngineMove.clear();
     }
 
     engine.setPosition();
@@ -65,31 +79,29 @@ void StockfishGame::reset() {
 
 void StockfishGame::startThinking(int thinkingTimeMs) {
 
-    if (m_isThinking || m_aiStartedThinking || m_gameOver) return;
+    if (m_isThinking || m_gameOver) return;
 
-    m_aiStartedThinking = true;
     m_isThinking = true;
     m_stopThinking = false;
 
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        pendingAIMove.clear();
+        pendingEngineMove.clear();
     }
 
-    if (aiThread.joinable()) {
-        aiThread.join();
+    if (engineThread.joinable()) {
+        engineThread.join();
     }
 
-    aiThread = std::thread([this, thinkingTimeMs]() {
+    engineThread = std::thread([this, thinkingTimeMs]() {
         std::string uciMove = engine.getBestMove(thinkingTimeMs);
 
         if (!m_stopThinking && !uciMove.empty()) {
             std::lock_guard<std::mutex> lock(m_mutex);
-            pendingAIMove = uciMove;
+            pendingEngineMove = uciMove;
         }
 
         m_isThinking = false;
-        m_aiStartedThinking = false;
         });
 }
 
@@ -97,18 +109,17 @@ void StockfishGame::stopThinking() {
     m_stopThinking = true;
 
 
-    if (aiThread.joinable()) {
-        aiThread.join();
+    if (engineThread.joinable()) {
+        engineThread.join();
     }
 
     m_isThinking = false;
-    m_aiStartedThinking = false;
 }
 
 std::string StockfishGame::getPendingMove() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    std::string move = pendingAIMove;
-    pendingAIMove.clear();
+    std::string move = pendingEngineMove;
+    pendingEngineMove.clear();
     return move;
 }
 

@@ -164,6 +164,23 @@ std::string StockfishEngine::getBestMove(int movetime) {
     return bestMove;
 }
 
+std::string StockfishEngine::getBestMoveByDepth(int depth) {
+    if (!isRunning())return"";
+
+    sendCommand("go depth " + std::to_string(depth));
+    std::string response = readResponse();
+
+    size_t pos = response.find("bestmove");
+    if (pos == std::string::npos)return"";
+
+    std::stringstream ss(response.substr(pos));
+    std::string token, bestmove;
+    ss >> token >> bestmove;
+
+    if (bestmove == "(none)" || bestmove.empty())return "";
+    return bestmove;
+}
+
 
 std::string StockfishEngine::toUCI(int row, int col) {
 

@@ -21,3 +21,8 @@ struct DragState {
 		draggingPiece = Piece::Empty;
 	}
 };
+
+struct HintPosition {
+	Position from;
+	Position to;
+};

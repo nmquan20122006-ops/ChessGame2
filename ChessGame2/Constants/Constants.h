@@ -12,4 +12,6 @@ int const OFFSET = 30;
 
 int const BOARD_PIXEL_SIZE = 640;
 
+constexpr double PI = 3.14159265358979323846;
+
 const std::string SOUND_PATH = "Assets/Sound/";

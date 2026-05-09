@@ -43,6 +43,7 @@ public:
 	const bool 				getIsCheckMate()			const { return m_isCheckMate; }
 	const std::string&		getCurrentFEN()				const { return m_currentFEN; }
 	const auto&				getAnimating()				const { return m_isAnimating; }
+	const HintPosition& getHintPosition()				const { return m_hintPosition; }
 
 	EngineConfig&			setEngineConfig()					{ return m_engineConfig; }
 	DragState&				setDragState()						{ return m_drag; }
@@ -63,11 +64,13 @@ public:
 	void					setCurrentFEN(std::string fen)		{ m_currentFEN = fen; }
 	void					setPendingFrom(Position pos)		{ m_pendingFrom = pos; }
 	void					setPendingTo(Position pos)			{ m_pendingTo = pos; }
+	void					setHintPosition(Position from, Position to) { m_hintPosition.from = from; m_hintPosition.to = to; }
 	void					clearSelection() {
 		m_selectedPos = { -1,-1 };
 		m_isSelected = false;
 		m_validMoves.clear();
 	}
+	void					clearHintPosition() { m_hintPosition.from = { -1,-1 }; m_hintPosition.to = { -1,-1 }; }
 	bool					isPosInVector(Position pos) const {
 		for (const auto& position : m_validMoves) {
 			if (position == pos) {
@@ -99,13 +102,14 @@ private:
 	bool					m_isSelected = false;
 	bool					m_isDualMode = false;
 	bool					m_isAnimating = false;
-	Position				m_selectedPos = { -1,-1 };
+	Position				m_selectedPos = { -1,-1 }; 
 	Position				m_checkPos;
 	Position				m_pendingFrom = { -1,-1 };
 	Position				m_pendingTo = { -1,-1 };
 	std::vector<Position>	m_validMoves;
 	DragState				m_drag;
 	EngineConfig			m_engineConfig;
+	HintPosition			m_hintPosition;
 	int						m_halfMoveClockCount = 0;
 	int						m_fullMoveNumberCount = 1;
 	std::string				m_currentFEN;

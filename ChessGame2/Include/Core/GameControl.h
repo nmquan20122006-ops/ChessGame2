@@ -71,6 +71,8 @@ public:
     void                                    finalizeMove(Move& move);
     void                                    initChessEngine(EngineConfig& engineConfig);
     void                                    updateChessEngineMove();
+    void                                    executeEngineMove();
+    void                                    executeHint();
     void                                    resetGame();
     bool                                    isBlocking() const ;
     GameState&                              getState() { return *m_gameState; }

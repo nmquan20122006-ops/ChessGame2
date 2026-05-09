@@ -1,4 +1,4 @@
-#include"ChessEngineController.h"
+﻿#include"ChessEngineController.h"
 #include"ChessEngineInterface.h"
 #include"MoveService.h"
 #include"Board.h"
@@ -43,9 +43,9 @@ bool ChessEngineController::isEnable()const {
 	return m_gameState->getEngineConfig().enabled;
 }
 
-void ChessEngineController::update() {
-	const auto& config = m_gameState->getEngineConfig();
+void ChessEngineController::updateEngineMove() {
 
+	const auto& config = m_gameState->getEngineConfig();
 	if (!config.enabled)								return;
 	if (config.turn != m_gameState->getCurrentTurn())	return;
 	if (m_gameState->getAnimating())					return;
@@ -57,11 +57,55 @@ void ChessEngineController::update() {
 		m_chessEngine->startThinking(config.thinkingMs);
 	}
 	else {
-		processUciMove(uciMove);
+		processMove(uciMove);
 	}
 }
 
-void ChessEngineController::processUciMove(const std::string& uciMove) {
+void ChessEngineController::updateEngineHint() {
+
+	const auto& config = m_gameState->getEngineConfig();
+	if (m_engineThinkingMode != EngineThinkingMode::HINT)return;
+	if (!config.enabled)								 return;
+	if (config.turn == m_gameState->getCurrentTurn())	 return;
+	if (m_gameState->getAnimating())					 return;
+	if (m_chessEngine->isThinking())					 return;
+
+	std::string uciMove = m_chessEngine->getPendingMove();
+
+	if (!uciMove.empty()) {
+		processHint(uciMove);
+		m_engineThinkingMode = EngineThinkingMode::IDLE;
+	}
+}
+
+void ChessEngineController::update() {
+
+	updateEngineHint();
+	updateEngineMove();
+}
+
+void ChessEngineController::requestHint() {
+
+	if (m_chessEngine->isThinking())						 return;
+	if (m_gameState->getCurrentTurn() == m_engineConfig.turn)return;
+	if (m_gameState->getAnimating())						 return;
+
+
+	m_engineThinkingMode = EngineThinkingMode::HINT;
+	m_chessEngine->goDepth(m_engineConfig.goDepth);
+}
+
+void ChessEngineController::processHint(const std::string& uciMove) {
+	if (uciMove.length() < 4)return;
+
+	Position from, to;
+	fromUCI(uciMove.substr(0, 2), from);
+	fromUCI(uciMove.substr(2, 2), to);
+
+	if (m_onHintReady) m_onHintReady(from, to);
+}
+
+void ChessEngineController::processMove(const std::string& uciMove) {
 	Position from, to;
 	fromUCI(uciMove.substr(0, 2), from);
 	fromUCI(uciMove.substr(2, 2), to);
