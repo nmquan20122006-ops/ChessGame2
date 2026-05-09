@@ -9,9 +9,9 @@ void PieceRenderer::setupPieceSprites() {
 	std::string pieceNames[6] = { "Pawn","Rook","Knight","Bishop","Queen","King" };
 
     //scale
-	float scale = (squareSize / (float)FRAME_SIZE) * 1.f;
+	float scale = (SQUARE_SIZE / (float)FRAME_SIZE) * 1.f;
 
-    this->baseScale = (squareSize / (float)FRAME_SIZE);
+    this->baseScale = (SQUARE_SIZE / (float)FRAME_SIZE);
 
 	for (int Color = 0; Color < 2; Color++) {
 		for (int type = 0; type < 6; type++) {
@@ -53,11 +53,11 @@ void PieceRenderer::drawPiece(sf::RenderWindow& window, Position pos, const Boar
     sprite.setScale(baseScale, baseScale);
     sprite.setOrigin(0.f, 0.f);
 
-    float offsetX = (squareSize - sprite.getGlobalBounds().width) / 2.f;
-    float offsetY = (squareSize - sprite.getGlobalBounds().height) / 2.f;
+    float OFFSETX = (SQUARE_SIZE - sprite.getGlobalBounds().width) / 2.f;
+    float OFFSETY = (SQUARE_SIZE - sprite.getGlobalBounds().height) / 2.f;
 
-    sprite.setPosition(pos.col * squareSize + offsetX + offset,
-        pos.row * squareSize + offsetY + offset);
+    sprite.setPosition(pos.col * SQUARE_SIZE + OFFSETX + OFFSET,
+        pos.row * SQUARE_SIZE + OFFSETY + OFFSET);
 
     window.draw(sprite);
 }
@@ -72,11 +72,11 @@ void PieceRenderer::drawPieceAtPos(sf::RenderWindow& window, Piece piece, float 
 	sf::Sprite& sprite = pieceSprite[ColorIndex][typeIndex];
 	sprite.setScale(baseScale, baseScale);
 
-	float offsetX = (squareSize - sprite.getGlobalBounds().width) / 2.f;
-	float offsetY = (squareSize - sprite.getGlobalBounds().height) / 2.f;
+	float OFFSETX = (SQUARE_SIZE - sprite.getGlobalBounds().width) / 2.f;
+	float OFFSETY = (SQUARE_SIZE - sprite.getGlobalBounds().height) / 2.f;
 
-    sprite.setPosition(col * squareSize + offsetX + offset,
-		row * squareSize + offsetY + offset);
+    sprite.setPosition(col * SQUARE_SIZE + OFFSETX + OFFSET,
+		row * SQUARE_SIZE + OFFSETY + OFFSET);
 
 	window.draw(sprite);
 
@@ -100,8 +100,8 @@ void PieceRenderer::renderAll(sf::RenderWindow& window, const Board& board) {
 
     const auto& drag = gameState->getDragState();
 
-    for (int r = 0; r < boardSize; r++) {
-        for (int c = 0; c < boardSize; c++) {
+    for (int r = 0; r < BOARD_SIZE; r++) {
+        for (int c = 0; c < BOARD_SIZE; c++) {
 
             Position pos(r, c);
 
@@ -156,9 +156,9 @@ sf::Sprite PieceRenderer::getCopySprite(Piece p) {
 
 sf::Texture& PieceRenderer::getCapturedPieceTexture(Piece piece) {
 
-    int colorOffset = isWhite(piece) ? 0 : 6;
+    int colorOFFSET = isWhite(piece) ? 0 : 6;
     int typeIndex = static_cast<int>(getType(piece)) - 1;
-    int finalIndex = colorOffset + typeIndex;
+    int finalIndex = colorOFFSET + typeIndex;
 
     sf::Texture& capturedAtlast = tm.getTexture("CapturedPieceTexture");
 

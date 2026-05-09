@@ -3,7 +3,7 @@
 #include<iostream>
 
 GameVideo::GameVideo() :
-	window				(sf::VideoMode(windowWidth, windowHeight), "Chess"),
+	window				(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Chess"),
 	gui					(window),
 	analysisPanel		(gui),
 	textureManager		(),
@@ -37,10 +37,18 @@ GameVideo::GameVideo() :
 	}
 
 void GameVideo::initAll(){
+
+	EngineConfig config;
+	config.Path = L"stockfish.exe";
+	config.difficulty = 20;
+	config.thinkingMs = 2000;
+	config.turn = Color::black;
+	config.enabled = true;
+
 	textureManager.initTexture();
 	audio.initSound();
 	loadTextureForMember();
-	gameControl->initStockfishGame();
+	gameControl->initChessEngine(config);
 
 	informationPanel.setFont("Assets/font1.ttf");
 }
@@ -57,6 +65,13 @@ void GameVideo::callBackAll() {
 
 	inputHandler->setIsBlock([this]()->bool {
 		return gameControl->isBlocking();
+		});
+	inputHandler->setOnPromotionSelected([&](Piece p) {
+		gameControl->executePromotionMove(p);
+		});
+
+	inputHandler->setOnGetPendingTo([&]() {
+		return state->getPendingTo();  // ← GameControl hỏi PromotionController
 		});
 
 	gameControl->setAnimationProvider([this](Position from, Position to, Piece piece, std::function<void()> onComplete) {
@@ -232,7 +247,7 @@ void GameVideo::gameLoop(float dt) {
 
 	animator.update(dt);
 	
-	gameControl->updateAiMove();
+	gameControl->updateChessEngineMove();
 
 	audio.update();
 

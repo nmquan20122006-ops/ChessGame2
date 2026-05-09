@@ -29,6 +29,17 @@ void StockfishGame::setDifficulty(int level) {
     engine.setSkillLevel(level);
 }
 
+void StockfishGame::goDepth(int depth) {
+
+    if (m_isThinking || m_aiStartedThinking || m_gameOver) return;
+
+    m_aiStartedThinking = true;
+    m_isThinking = true;
+    m_stopThinking = false;
+
+    
+}
+
 void StockfishGame::newGame(bool playerIsWhite) {
 
     stopThinking();
@@ -53,6 +64,7 @@ void StockfishGame::reset() {
 }
 
 void StockfishGame::startThinking(int thinkingTimeMs) {
+
     if (m_isThinking || m_aiStartedThinking || m_gameOver) return;
 
     m_aiStartedThinking = true;

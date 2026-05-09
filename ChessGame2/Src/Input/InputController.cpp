@@ -15,7 +15,7 @@ void InputController::handleEvent(sf::RenderWindow& window, sf::Event& e, const 
 
 		if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left) {
 
-			handleClickPromotionPanel(worldPos);
+			inputHandler.handleClickPromotionPanel(worldPos);
 		}
 
 		return;
@@ -24,22 +24,22 @@ void InputController::handleEvent(sf::RenderWindow& window, sf::Event& e, const 
 	if (e.type == sf::Event::MouseButtonPressed) {
 		if (e.mouseButton.button == sf::Mouse::Left) {
 
-			inputHandler.HandleSquareSelection(mouseGridPos);
-			inputHandler.HandlePress(mouseGridPos, worldPos);
+			inputHandler.handleSquareSelection(mouseGridPos);
+			inputHandler.handlePress(mouseGridPos, worldPos);
 			
 		}
 	}
 	
 	if (e.type == sf::Event::MouseMoved) {
 		 
-		inputHandler.HandleMove(worldPos);
+		inputHandler.handleMove(worldPos);
 		
 	}
 
 	if (e.type == sf::Event::MouseButtonReleased) {
 		if (e.mouseButton.button == sf::Mouse::Left) {
 
-			inputHandler.HandleRelease(mouseGridPos);
+			inputHandler.handleRelease(mouseGridPos);
 
 		}
 	}
@@ -61,50 +61,6 @@ void InputController::handleEvent(sf::RenderWindow& window, sf::Event& e, const 
 
 }
 
-void InputController::handleClickPromotionPanel(sf::Vector2f worldPos) {
-
-	int col = static_cast<int>((worldPos.x - offset) / squareSize);
-	int row = static_cast<int>((worldPos.y - offset) / squareSize);
-
-	Position pendingTo = gameState.getPendingTo();
-	Color turn = gameState.getCurrentTurn();
-
-	if (col == pendingTo.col) {
-		int startRow = (turn == Color::white) ? 0 : 4;
-		int endRow = (turn == Color::white) ? 3 : 7;
-
-		if (row >= startRow && row <= endRow) {
-			
-			int index = std::abs(row - startRow);
-
-			Piece selected;
-			if (turn == Color::white) {
-				if (index == 0) selected = Piece::W_Queen;
-				else if (index == 1) selected = Piece::W_Rook;
-				else if (index == 2) selected = Piece::W_Bishop;
-				else selected = Piece::W_Knight;
-			}
-			else {
-				if (index == 0) selected = Piece::B_Queen;
-				else if (index == 1) selected = Piece::B_Rook;
-				else if (index == 2) selected = Piece::B_Bishop;
-				else selected = Piece::B_Knight;
-			}
-
-			//send the selected promotion piece to game control to execute the promotion move
-			gameControl->executePromotionMove(selected);
-		}
-		else {
-			
-			//logic->cancelPromotion();
-		}
-	}
-	else {
-		
-		//logic->cancelPromotion();
-	}
-}
-
 Position InputController::getMouseHoverPosition(const sf::RenderWindow& window, const sf::View& boardView) {
 
 	sf::Vector2i mousePos = sf::Mouse::getPosition(window);
@@ -114,6 +70,6 @@ Position InputController::getMouseHoverPosition(const sf::RenderWindow& window, 
 	float boardX = worldPos.x;
 	float boardY = worldPos.y;
 
-	return pixelToCoordinate(sf::Vector2i(boardX,boardY),squareSize);
+	return pixelToCoordinate(sf::Vector2i(boardX,boardY),SQUARE_SIZE);
 
 }

@@ -24,114 +24,89 @@
 
 class GameState {
 public:
-	//=================================================================================================
-	//Getters
-	//=================================================================================================
-	const DragState&	 getDragState()				const { return drag; }
-	const AiState&		 getAiState()				const { return aiState; }
-	const GameMode&		 getGameMode()				const { return currentMode; }
-	const GameStatus&	 getGameStatus()			const { return gameStatus; }
-	const bool&			 getDualMode()				const { return isDualMode; }
-	const int&			 getHalfMoveClockCount()	const { return halfMoveClockCount; }
-	const int&			 getFullMoveNumberCount()	const { return fullMoveNumberCount; }
-	const Position&		 getPendingTo()				const { return pendingTo; }
-	const Color			 getCurrentTurn()			const { return currentTurn; }
-	const Color			 getColor(Piece p)			const { if ((int)p >= 1 && (int)p <= 6)return Color::white; return Color::black; }
-	const auto&			 getValidMoves()			const { return validMoves; }
-	const Position		 getSelectPos()				const { return selectedPos; }
-	const Position		 getCheckPos()				const { return checkPos; }
-	const bool			 getIsCheck()				const { return isCheck; }
-	const bool 			 getIsSelected()			const { return isSelected; }
-	const bool 			 getIsCheckMate()			const { return isCheckMate; }
-	const std::string&	 getCurrentFEN()			const { return currentFEN; }
-	const auto&			 getAnimating()				const { return isAnimating; }
-	//===================================================================================================
-	//Setters
-	//===================================================================================================
-	AiState&			 setAiState()						{ return aiState; }
-	DragState&			 setDragState()						{ return drag; }
-	void				 setGameMode(GameMode m)			{ currentMode = m; }
-	void				 setGameStatus(GameStatus state)	{ gameStatus = state; }
-	void				 setDualMode(bool a)				{ isDualMode = a; }
-	void				 setSelectPos(Position pos)			{ selectedPos = pos; }
-	void				 setHalfMoveClockCount(int a)		{ halfMoveClockCount = a; }
-	void				 setFullMoveNumberCount(int a)		{ fullMoveNumberCount = a; }
-	bool				 hasSelection()				const	{ return selectedPos.row != -1; }
-	void				 setValidMoves(std::vector<Position> v) { validMoves = v; }
-	void				 setIsCheck(bool state)				{ isCheck = state; }
-	void				 setIsSelected(bool state)			{ isSelected = state; }
-	void				 setIsCheckMate(bool state)			{ isCheckMate = state; }
-	void				 setAnimating(bool state)			{ isAnimating = state; }
-	void				 setCheckPos(Position pos)			{ checkPos = pos; }
-	void				 setCurrentTurn(Color turn)			{ currentTurn = turn; }
-	void				 setCurrentFEN(std::string fen)		{ currentFEN = fen; }
-	//===================================================================================================
-	//Action methods
-	//===================================================================================================
-	void				 clearSelection() {
-		selectedPos = { -1,-1 };
-		isSelected = false;
-		validMoves.clear();
+	const DragState&		getDragState()				const { return m_drag; }
+	const EngineConfig&		getEngineConfig()			const { return m_engineConfig; }
+	const GameMode&			getGameMode()				const { return m_currentMode; }
+	const GameStatus&		getGameStatus()				const { return m_gameStatus; }
+	const bool&				getDualMode()				const { return m_isDualMode; }
+	const int&				getHalfMoveClockCount()		const { return m_halfMoveClockCount; }
+	const int&				getFullMoveNumberCount()	const { return m_fullMoveNumberCount; }
+	const Position&			getPendingTo()				const { return m_pendingTo; }
+	const Position&			getPendingFrom()			const { return m_pendingFrom; }
+	const Color				getCurrentTurn()			const { return m_currentTurn; }
+	const Color				getColor(Piece p)			const { if ((int)p >= 1 && (int)p <= 6)return Color::white; return Color::black; }
+	const auto&				getValidMoves()				const { return m_validMoves; }
+	const Position			getSelectPos()				const { return m_selectedPos; }
+	const Position			getCheckPos()				const { return m_checkPos; }
+	const bool				getIsCheck()				const { return m_isCheck; }
+	const bool 				getIsSelected()				const { return m_isSelected; }
+	const bool 				getIsCheckMate()			const { return m_isCheckMate; }
+	const std::string&		getCurrentFEN()				const { return m_currentFEN; }
+	const auto&				getAnimating()				const { return m_isAnimating; }
+
+	EngineConfig&			setEngineConfig()					{ return m_engineConfig; }
+	DragState&				setDragState()						{ return m_drag; }
+	void					setGameMode(GameMode m)				{ m_currentMode = m; }
+	void					setGameStatus(GameStatus state)		{ m_gameStatus = state; }
+	void					setDualMode(bool a)					{ m_isDualMode = a; }
+	void					setSelectPos(Position pos)			{ m_selectedPos = pos; }
+	void					setHalfMoveClockCount(int a)		{ m_halfMoveClockCount = a; }
+	void					setFullMoveNumberCount(int a)		{ m_fullMoveNumberCount = a; }
+	bool					hasSelection()				const	{ return m_selectedPos.row != -1; }
+	void					setValidMoves(std::vector<Position> v) { m_validMoves = v; }
+	void					setIsCheck(bool state)				{ m_isCheck = state; }
+	void					setIsSelected(bool state)			{ m_isSelected = state; }
+	void					setIsCheckMate(bool state)			{ m_isCheckMate = state; }
+	void					setAnimating(bool state)			{ m_isAnimating = state; }
+	void					setCheckPos(Position pos)			{ m_checkPos = pos; }
+	void					setCurrentTurn(Color turn)			{ m_currentTurn = turn; }
+	void					setCurrentFEN(std::string fen)		{ m_currentFEN = fen; }
+	void					setPendingFrom(Position pos)		{ m_pendingFrom = pos; }
+	void					setPendingTo(Position pos)			{ m_pendingTo = pos; }
+	void					clearSelection() {
+		m_selectedPos = { -1,-1 };
+		m_isSelected = false;
+		m_validMoves.clear();
 	}
-	bool				 isPosInVector(Position pos) const {
-		for (const auto& position : validMoves) {
+	bool					isPosInVector(Position pos) const {
+		for (const auto& position : m_validMoves) {
 			if (position == pos) {
 				return true;
 			}
 		}
 		return false;
 	}
-	void				 switchTurn() { currentTurn = (currentTurn == Color::white) ? Color::black : Color::white; }
-	void				 reset() {
-		currentTurn = Color::white;
-		isCheck = false;
-		isCheckMate = false;
-		isSelected = false;
-		selectedPos = { -1, -1 };
-		checkPos = { -1, -1 };
-		validMoves.clear();
-		drag.reset();
-		isDualMode = false;
+	void					switchTurn() { m_currentTurn = (m_currentTurn == Color::white) ? Color::black : Color::white; }
+	void					reset() {
+		m_currentTurn = Color::white;
+		m_isCheck = false;
+		m_isCheckMate = false;
+		m_isSelected = false;
+		m_selectedPos = { -1, -1 };
+		m_checkPos = { -1, -1 };
+		m_validMoves.clear();
+		m_drag.reset();
+		m_isDualMode = false;
 
 	}
+
 private:
-	friend class GameControl;
-	friend class Board_DEBUG;
-	friend class BoardToFEN_DEBUG;
-	//===================================================================================================
-	//Turn and state
-	//===================================================================================================
-	Color				currentTurn = Color::white;
-	GameStatus			gameStatus = GameStatus::Normal;
-	GameMode			currentMode = GameMode::PlayerVsAi;
-	//===================================================================================================
-	//Flag
-	//===================================================================================================
-	bool				isCheck = false;
-	bool				isCheckMate = false;
-	bool				isSelected = false;
-	bool				isDualMode = false;
-	bool				isAnimating = false;
-	//===================================================================================================
-	//Position
-	//===================================================================================================
-	Position			selectedPos = { -1,-1 };
-	Position			checkPos;
-	Position			pendingFrom = { -1,-1 };
-	Position			pendingTo = { -1,-1 };
-	//===================================================================================================
-	//Move data
-	//===================================================================================================
-	std::vector<Position>validMoves;
-	//===================================================================================================
-	//Sub-state
-	//===================================================================================================
-	DragState			drag;
-	AiState				aiState;
-	//===================================================================================================
-	//FEN/move counters
-	//===================================================================================================
-	int					halfMoveClockCount = 0;
-	int					fullMoveNumberCount = 1;
-	std::string			currentFEN;
+	Color					m_currentTurn = Color::white;
+	GameStatus				m_gameStatus = GameStatus::Normal;
+	GameMode				m_currentMode = GameMode::PlayerVsAi;
+	bool					m_isCheck = false;
+	bool					m_isCheckMate = false;
+	bool					m_isSelected = false;
+	bool					m_isDualMode = false;
+	bool					m_isAnimating = false;
+	Position				m_selectedPos = { -1,-1 };
+	Position				m_checkPos;
+	Position				m_pendingFrom = { -1,-1 };
+	Position				m_pendingTo = { -1,-1 };
+	std::vector<Position>	m_validMoves;
+	DragState				m_drag;
+	EngineConfig			m_engineConfig;
+	int						m_halfMoveClockCount = 0;
+	int						m_fullMoveNumberCount = 1;
+	std::string				m_currentFEN;
 };

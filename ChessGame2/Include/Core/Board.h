@@ -90,50 +90,37 @@ struct CastleState {
 
 class Board {
 private:
-	Piece		 board[8][8] = {};
-	Position	 whiteKingPos, blackKingPos;
-	CastleState	 castleState;
-
+	Piece		 m_board[8][8] = {};
+	Position	 m_whiteKingPos, m_blackKingPos;
+	CastleState	 m_castleState;
+	LastMove	 m_lastMove;
 public:
-	// =========================================================
-	// Constructors & copy contructor
-	// =========================================================
+	
 	Board();
 	Board(const Board& other);
-	// =========================================================
-	// Board setup
-	// =========================================================
-	void		 initBoard();
+
+	void		 init();
 	void		 setPiece(Position pos, Piece p);
-	void		 resetBoard();
-	// =========================================================
-	// Board queries and actions
-	// =========================================================
+	void		 reset();
+
 	Piece		 getPiece(Position pos)	const;
 	bool		 isEmpty(Position pos) const;
 	bool		 isInside(Position pos) const;
 	void		 deletePiece(Position pos);
 	void		 movePiece(Position fromPos, Position toPos);
-	// =========================================================
-	// last move statement management
-	// =========================================================
-	LastMove	 lastMove;
+	
 	void		 updateLastMove(LastMove move);
-	LastMove	 getLastMove() const		{ return lastMove; }
+	LastMove	 getLastMove() const		{ return m_lastMove; }
 	void		 setLastMove(Position from, Position to);
-	void		 resetLastMove()			{ lastMove.reset(); }
-	// =========================================================
-	// king position and king move management
-	// =========================================================
+	void		 resetLastMove()			{ m_lastMove.reset(); }
+
 	Position	 findKing(bool isWhiteKing) const;
 	void		 updateKingPosition(Position toPos, const Piece& p);
-	// =========================================================
-	// castling state management
-	// =========================================================
-	const auto&	 getCastleState()const		{ return castleState; }
+
+	const auto&	 getCastleState()const		{ return m_castleState; }
 	void		 updateCastleState(Piece p, Position from, Position to, Piece capturedPiece);
-	auto		 resetWhiteKingSide()		{ return castleState.resetWhiteKingSide(); }
-	auto		 resetWhiteQueenSide()		{ return castleState.resetWhiteQueenSide(); }
-	auto		 resetBlackQueenSide()		{ return castleState.resetBlackQueenSide(); }
-	auto		 resetBlackKingSide()		{ return castleState.resetBlackKingSide(); }
+	auto		 resetWhiteKingSide()		{ return m_castleState.resetWhiteKingSide(); }
+	auto		 resetWhiteQueenSide()		{ return m_castleState.resetWhiteQueenSide(); }
+	auto		 resetBlackQueenSide()		{ return m_castleState.resetBlackQueenSide(); }
+	auto		 resetBlackKingSide()		{ return m_castleState.resetBlackKingSide(); }
 };

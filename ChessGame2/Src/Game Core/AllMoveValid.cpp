@@ -109,7 +109,7 @@ std::vector<Position>AllValidMove::getRookAllMoves(Position fromPos, const Board
 	std::vector<std::pair<int, int>>directions = { {1,0},{-1,0},{0,1},{0,-1} };
 
 	for (auto dir : directions) {
-		for (int i = 1; i < boardSize; i++) {
+		for (int i = 1; i < BOARD_SIZE; i++) {
 
 			Position to = { fromPos.row + i * dir.first,fromPos.col + i * dir.second };
 
@@ -140,7 +140,7 @@ std::vector<Position>AllValidMove::getBishopAllMoves(Position fromPos, const Boa
 	int direction[4][2] = { {1,1},{-1,1},{-1,-1},{1,-1} };
 
 	for (auto& dir : direction) {
-		for (int i = 1; i < boardSize; i++) {
+		for (int i = 1; i < BOARD_SIZE; i++) {
 
 			Position toPos = { fromPos.row + i * dir[0],fromPos.col + i * dir[1] };
 			if (!board.isInside(toPos))break;
@@ -173,7 +173,7 @@ std::vector<Position>AllValidMove::getQueenAllMoves(Position fromPos, const Boar
 	int directions[8][2] = { {-1,0},{1,0},{0,1},{0,-1},{1,1},{-1,-1},{-1,1},{1,-1} };
 
 	for (auto& dir : directions) {
-		for (int i = 1; i < boardSize; i++) {
+		for (int i = 1; i < BOARD_SIZE; i++) {
 
 			Position toPos = { fromPos.row + i * dir[0],fromPos.col + i * dir[1] };
 

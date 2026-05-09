@@ -12,8 +12,8 @@ std::vector<BotMove>DumpBot::bot_getAllValidMove(const Board& board) {
 
 	std::vector<BotMove> bot_allMoves;
 
-	for (int r = 0; r < boardSize; r++) {
-		for (int c = 0; c < boardSize; c++) {
+	for (int r = 0; r < BOARD_SIZE; r++) {
+		for (int c = 0; c < BOARD_SIZE; c++) {
 
 			Position currentPos = { r,c };
 			Piece currentPiece = board.getPiece(currentPos);

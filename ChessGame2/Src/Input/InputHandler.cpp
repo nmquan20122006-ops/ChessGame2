@@ -2,77 +2,78 @@
 #include"Board.h"
 #include"MoveService.h"
 #include"EventBus.h"
-#include<iostream>
+#include"PromotionController.h"
+#include"GameControl.h"
 
 InputHandler::InputHandler(std::shared_ptr<Board>b, std::shared_ptr<GameState>s, std::shared_ptr<MoveService> m):
-	gameState(s),board(b), moveService(m) {}
+	m_gameState(s), m_board(b), m_moveService(m) {}
 
-bool InputHandler::IsCurrentTurnPiece(Piece p)const {
+bool InputHandler::isCurrentTurnPiece(Piece p)const {
 
 	if (p == Piece::Empty)return false;
-	return gameState->getColor(p) == gameState->getCurrentTurn();
+	return m_gameState->getColor(p) == m_gameState->getCurrentTurn();
 }
 
-void InputHandler::Select(Position pos) {
+void InputHandler::select(Position pos) {
 
-	gameState->setSelectPos(pos);
-	gameState->setIsSelected(true);
-	gameState->setValidMoves(moveService->getValidMoves(pos, *board));
+	m_gameState->setSelectPos(pos);
+	m_gameState->setIsSelected(true);
+	m_gameState->setValidMoves(m_moveService->getValidMoves(pos, *m_board));
 }
 
-void InputHandler::Deselect() {
+void InputHandler::deselect() {
 
-	gameState->clearSelection();
-	gameState->setIsSelected(false);
+	m_gameState->clearSelection();
+	m_gameState->setIsSelected(false);
 }
 
-void InputHandler::HandleSquareSelection(Position pos) {
+void InputHandler::handleSquareSelection(Position pos) {
 
-	if (IsBlocking())return;
-	if (!board->isInside(pos))return;
+	if (isBlocking())return;
+	if (!m_board->isInside(pos))return;
 
-	Piece piece = board->getPiece(pos);
-	bool isOwnPiece = IsCurrentTurnPiece(piece);
+	Piece piece = m_board->getPiece(pos);
+	bool isOwnPiece = isCurrentTurnPiece(piece);
 
-	if (!gameState->hasSelection()) {
+	if (!m_gameState->hasSelection()) {
 
 		if (isOwnPiece) {
-			Select(pos);
+			select(pos);
 			EventBus::get().publish(GameEvent::Select);
 		}
 		return;
 	}
 
-	if (pos == gameState->getSelectPos()) {
-		Deselect();
+	if (pos == m_gameState->getSelectPos()) {
+		deselect();
 		return;
 	}
 
 	if (isOwnPiece) {
-		Select(pos);
+		select(pos);
 		return;
 	}
 
-	if (gameState->isPosInVector(pos)) {
-		RequestClickMove(gameState->getSelectPos(), pos);
-		Deselect();
+	if (m_gameState->isPosInVector(pos)) {
+		requestClickMove(m_gameState->getSelectPos(), pos);
+		deselect();
 		return;
 	}
 
 	EventBus::get().publish(GameEvent::UnValidMove);
 	
-	Deselect();
+	deselect();
 }
 
-void InputHandler::HandlePress(Position pos, sf::Vector2f mousePos) {
+void InputHandler::handlePress(Position pos, sf::Vector2f mousePos) {
 
-	if (IsBlocking())return;
-	if (!board->isInside(pos))return;
+	if (isBlocking())return;
+	if (!m_board->isInside(pos))return;
 
-	Piece piece = board->getPiece(pos);
-	bool isOwnPiece = IsCurrentTurnPiece(piece);
+	Piece piece = m_board->getPiece(pos);
+	bool isOwnPiece = isCurrentTurnPiece(piece);
 
-	auto& drag = gameState->setDragState();
+	auto& drag = m_gameState->setDragState();
 	drag.isActive = true;
 	drag.mousePosition= mousePos;
 
@@ -88,34 +89,34 @@ void InputHandler::HandlePress(Position pos, sf::Vector2f mousePos) {
 	}
 }
 
-void InputHandler::HandleMove(sf::Vector2f mousePos) {
+void InputHandler::handleMove(sf::Vector2f mousePos) {
 
-	auto& drag = gameState->setDragState();
+	auto& drag = m_gameState->setDragState();
 	if (drag.isDragging) {
 		drag.mousePosition = mousePos;
 	}
 
 }
 
-void InputHandler::HandleRelease(Position toPos) {
+void InputHandler::handleRelease(Position toPos) {
 
-	if (IsBlocking())return;
-	if (!board->isInside(toPos))return;
+	if (isBlocking())return;
+	if (!m_board->isInside(toPos))return;
 
-	auto& drag = gameState->setDragState();
+	auto& drag = m_gameState->setDragState();
 
 	drag.isDragging = false;
 
 	Position fromPos = drag.fromPos;
 	
 	bool isDifferentSquare = (fromPos != toPos);
-	bool isSelectionMatch = gameState->hasSelection() && fromPos == gameState->getSelectPos();
-	bool isTarget = gameState->isPosInVector(toPos);
+	bool isSelectionMatch = m_gameState->hasSelection() && fromPos == m_gameState->getSelectPos();
+	bool isTarget = m_gameState->isPosInVector(toPos);
 
 	if (isDifferentSquare && isSelectionMatch && isTarget) {
-		RequestDragMove(fromPos, toPos);
+		requestDragMove(fromPos, toPos);
 		drag.reset();
-		Deselect();
+		deselect();
 		return;
 	} 
 	if (isDifferentSquare && isSelectionMatch && !isTarget) {
@@ -125,13 +126,13 @@ void InputHandler::HandleRelease(Position toPos) {
 	drag.reset();
 }
 
-/*void InputHandler::HandleClickPromotionPanel(sf::Vector2f worldPos) {
+void InputHandler::handleClickPromotionPanel(sf::Vector2f worldPos) {
 
-	int col = static_cast<int>((worldPos.x - offset) / squareSize);
-	int row = static_cast<int>((worldPos.y - offset) / squareSize);
+	int col = static_cast<int>((worldPos.x - OFFSET) / SQUARE_SIZE);
+	int row = static_cast<int>((worldPos.y - OFFSET) / SQUARE_SIZE);
 
-	Position pendingTo = gameState->getPendingTo();
-	Color turn = gameState->getCurrentTurn();
+	Position pendingTo = m_onGetPendingTo();
+	Color turn = m_gameState->getCurrentTurn();
 
 	if (col == pendingTo.col) {
 		int startRow = (turn == Color::white) ? 0 : 4;
@@ -155,8 +156,7 @@ void InputHandler::HandleRelease(Position toPos) {
 				else selected = Piece::B_Knight;
 			}
 
-			//send the selected promotion piece to game control to execute the promotion move
-			gameControl->executePromotionMove(selected);
+			m_onPromotionSelected(selected);
 		}
 		else {
 
@@ -167,4 +167,4 @@ void InputHandler::HandleRelease(Position toPos) {
 
 		//logic->cancelPromotion();
 	}
-}*/
+}

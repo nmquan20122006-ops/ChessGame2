@@ -132,8 +132,8 @@ bool MoveService::CheckMate(const Board& board, Color turn) {
 
     if (!Check(board, turn))return false;
 
-    for (int r = 0; r < boardSize; r++) {
-        for (int c = 0; c < boardSize; c++) {
+    for (int r = 0; r < BOARD_SIZE; r++) {
+        for (int c = 0; c < BOARD_SIZE; c++) {
 
             Position currentPos = { r,c };
             Piece currentPiece = board.getPiece(currentPos);

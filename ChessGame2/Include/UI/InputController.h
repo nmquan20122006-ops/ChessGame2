@@ -19,8 +19,6 @@ public:
 	InputController(InputHandler& inputHandler, GameState& gameState, GameControl* gameControl);
 
 	void handleEvent(sf::RenderWindow& window, sf::Event& e,const sf::View& view);
-
-	void handleClickPromotionPanel(sf::Vector2f worldPos);
 	
 	Position getMouseHoverPosition(const sf::RenderWindow& window,const sf::View& view);
 

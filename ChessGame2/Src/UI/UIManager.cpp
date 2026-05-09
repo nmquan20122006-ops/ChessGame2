@@ -2,8 +2,8 @@
 
 UIManager::UIManager(sf::Vector2u windowSize,AnalysisPanel& a): analysisPanel(a){
 
-	boardView.setSize(boardPixelSize + 2 * offset, boardPixelSize + 2 * offset);
-	boardView.setCenter((boardPixelSize + 2 * offset) / 2.f, (boardPixelSize + 2 * offset) / 2.f);
+	boardView.setSize(BOARD_PIXEL_SIZE + 2 * OFFSET, BOARD_PIXEL_SIZE + 2 * OFFSET);
+	boardView.setCenter((BOARD_PIXEL_SIZE + 2 * OFFSET) / 2.f, (BOARD_PIXEL_SIZE + 2 * OFFSET) / 2.f);
 	
 	onResize(windowSize.x, windowSize.y);
 }

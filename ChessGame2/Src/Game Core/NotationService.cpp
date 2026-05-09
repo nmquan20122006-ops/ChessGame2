@@ -42,8 +42,8 @@ std::string ChessNotation::disAmbiguation(Move& move, std::shared_ptr<Board> boa
 
 	std::vector<Position> ambiguos;
 
-	for (int row = 0; row < boardSize; row++) {
-		for (int col = 0; col < boardSize; col++) {
+	for (int row = 0; row < BOARD_SIZE; row++) {
+		for (int col = 0; col < BOARD_SIZE; col++) {
 
 			Position pos = { row,col };
 

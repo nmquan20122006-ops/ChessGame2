@@ -52,6 +52,7 @@ public:
     bool            isThinking() const override { return m_isThinking.load(); }
 
     std::string     getPendingMove() override;
+    void            goDepth(int depth) override;
     void            syncPosition(const std::string& move)override;
 
     bool            isGameOver() const override { return m_gameOver.load(); }

@@ -49,7 +49,7 @@ private:
 	AnalysisPanel						analysisPanel;
 	InformationPanel					informationPanel;
 	
-	sf::Vector2u windowSize = { windowWidth,windowHeight };
+	sf::Vector2u windowSize = { WINDOW_WIDTH,WINDOW_HEIGHT };
 
 public:
 

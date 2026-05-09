@@ -23,69 +23,57 @@ class MoveExecutor;
 class MoveService;
 class IChessEngine;
 class ChessNotation;
+class PromotionController;
+class ChessEngineController;
+struct EngineConfig;
+
 
 class GameControl {
 public:
-    using MoveEventCallback             = std::function<void(const Move& move)>;
-    using StateChangeCallback           = std::function<void(GameStatus newState)>;
-    using AnimRequest                   = std::function<void(Position, Position, Piece, std::function<void()>)>;
+    using MoveEventCallback                 = std::function<void(const Move& move)>;
+    using StateChangeCallback               = std::function<void(GameStatus newState)>;
+    using AnimRequest                       = std::function<void(Position, Position, Piece, std::function<void()>)>;
 
 private:
-    std::shared_ptr<Board>              board;
-    std::unique_ptr<MoveExecutor>       moveExecutor;
-    std::shared_ptr<MoveService>        moveService;
-    std::shared_ptr<GameState>          gameState;
-    std::unique_ptr<IChessEngine>       chessEngine;
-    std::unique_ptr<DumpBot>            dumpBot;
-    MoveLog&                            moveLog;
+    std::shared_ptr<Board>                  m_board;
+    std::unique_ptr<MoveExecutor>           m_moveExecutor;
+    std::shared_ptr<MoveService>            m_moveService;
+    std::shared_ptr<GameState>              m_gameState;
+    std::unique_ptr<DumpBot>                m_dumpBot;
+    std::unique_ptr<PromotionController>    m_promotionController;
+    std::unique_ptr<ChessEngineController>  m_chessEngineController;
+    MoveLog&                                m_moveLog;
+    AnimRequest                             m_animationProvider = nullptr;
+    std::vector<MoveEventCallback>          m_onMoveExecutedListeners;
+    std::vector<StateChangeCallback>        m_onGameStateChangedListeners;
 
-    AnimRequest                         animationProvider = nullptr;
+    void                                    updateGameState();
+    void                                    notifyMoveExecuted(const Move& move);
+    void                                    notifyStateChanged(const GameStatus& newState);
 
-    std::vector<MoveEventCallback>      m_onMoveExecutedListeners;
-    std::vector<StateChangeCallback>    m_onGameStateChangedListeners;
-
-    void            updateGameState();
-    void            notifyMoveExecuted(const Move& move);
-    void            notifyStateChanged(const GameStatus& newState);
 
 public:
-    GameControl(std::shared_ptr<Board> b, std::shared_ptr<GameState> s,
-        std::shared_ptr<MoveService>& ms, std::unique_ptr<MoveExecutor>& me, MoveLog& l);
-    ~GameControl();
-    //====================================================================
-    //request
-    //====================================================================
-    bool             requestAiMove(Position from, Position to, char promoition);
-    bool             requestMove(Position from, Position to);
-    //====================================================================
-    //execute
-    //====================================================================
-    bool             executeAiMove(std::string& uciMove);
-    bool             executePlayerMove(Position from, Position to);
-    bool             executeUndoMove();
-    void             executePromotionMove(Piece selectedPiece);
-    //====================================================================
-    //subscribe listeners
-    //====================================================================
-    void             subscribeToMove(MoveEventCallback callback) { m_onMoveExecutedListeners.push_back(callback); }
-    void             subscribeToStateChange(StateChangeCallback callback) { m_onGameStateChangedListeners.push_back(callback); }
-    void             setAnimationProvider(AnimRequest provider) { animationProvider = provider; }
-    void             publishMoveEvent(Move& move);
-    //====================================================================
-    //sync
-    //====================================================================
-    void             syncAfterUndo(UndoEntry undoEntry);
-    void             finalizeMove(Move& move);
-    //====================================================================
-    //sync
-    //====================================================================
-    void             initStockfishGame();
-    void             stopStockfish();
-    void             updateAiMove();
-    void             preparePromotion(Position fromPos, Position toPos);
-    void             resetGame();
-    GameState&       getState() { return *gameState; }
-    bool             isBlocking()const;
-
-    MoveExecutor& getMoveExecutor() { return *moveExecutor; }
+    GameControl(std::shared_ptr<Board> b,
+        std::shared_ptr<GameState> s,
+        std::shared_ptr<MoveService>& ms,
+        std::unique_ptr<MoveExecutor>& me,
+        MoveLog& l);
+                                            ~GameControl();
+    bool                                    requestMove(Position from, Position to);
+    bool                                    executePlayerMove(Position from, Position to);
+    bool                                    executeUndoMove();
+    void                                    executePromotionMove(Piece selectedPiece);
+    void                                    subscribeToMove(MoveEventCallback callback) { m_onMoveExecutedListeners.push_back(callback); }
+    void                                    subscribeToStateChange(StateChangeCallback callback) { m_onGameStateChangedListeners.push_back(callback); }
+    void                                    setAnimationProvider(AnimRequest provider) { m_animationProvider = provider; }
+    void                                    publishMoveEvent(Move& move);
+    void                                    syncAfterUndo(UndoEntry undoEntry);
+    void                                    finalizeMove(Move& move);
+    void                                    initChessEngine(EngineConfig& engineConfig);
+    void                                    updateChessEngineMove();
+    void                                    resetGame();
+    bool                                    isBlocking() const ;
+    GameState&                              getState() { return *m_gameState; }
+    MoveExecutor&                           getMoveExecutor() { return *m_moveExecutor; }
+    PromotionController&                    getPromotionController() { return *m_promotionController; }
 };

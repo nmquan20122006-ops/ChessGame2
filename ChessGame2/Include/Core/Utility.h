@@ -2,6 +2,8 @@
 #include<iostream>
 #include<SFML/System/Vector2.hpp>
 #include"Constants.h"
+#include"Piece.h"
+#include"State/Type.hpp"
 
 class GameState;
 struct Move;
@@ -27,18 +29,18 @@ struct Position {
 
 };
 
-inline Position pixelToCoordinate(sf::Vector2i pixelPos, int squareSize) {
+inline Position pixelToCoordinate(sf::Vector2i pixelPos, int SQUARE_SIZE) {
 
-	int c = static_cast<int>(std::floor((static_cast<float>(pixelPos.x) - offset) / squareSize));
-	int r = static_cast<int>(std::floor((static_cast<float>(pixelPos.y) - offset) / squareSize));
+	int c = static_cast<int>(std::floor((static_cast<float>(pixelPos.x) - OFFSET) / SQUARE_SIZE));
+	int r = static_cast<int>(std::floor((static_cast<float>(pixelPos.y) - OFFSET) / SQUARE_SIZE));
 
 	return { r, c };
 }
 
 inline sf::Vector2f inMiddleSquare(Position pos) {
 	
-	float sSize = static_cast<float>(squareSize);
-	float off = static_cast<float>(offset);
+	float sSize = static_cast<float>(SQUARE_SIZE);
+	float off = static_cast<float>(OFFSET);
 
 	float centerX = static_cast<float>(pos.col) * sSize + off + (sSize / 2.0f);
 	float centerY = static_cast<float>(pos.row) * sSize + off + (sSize / 2.0f);
@@ -48,8 +50,8 @@ inline sf::Vector2f inMiddleSquare(Position pos) {
 
 inline sf::Vector2f toPixel(Position pos) {
 	
-	float x = static_cast<float>(pos.col * squareSize + offset);
-	float y = static_cast<float>(pos.row * squareSize + offset);
+	float x = static_cast<float>(pos.col * SQUARE_SIZE + OFFSET);
+	float y = static_cast<float>(pos.row * SQUARE_SIZE + OFFSET);
 
 	return sf::Vector2f(x, y);
 }
@@ -82,4 +84,21 @@ inline std::string moveToUCI(const Position& from, const Position& to, char prom
 		uci += promotion;
 	}
 	return uci;
+}
+
+inline Piece charToPiece(Color turn, char promotionChar) {
+
+	if (turn == Color::white) {
+		if (promotionChar == 'q') return Piece::W_Queen;
+		if (promotionChar == 'r') return Piece::W_Rook;
+		if (promotionChar == 'b') return Piece::W_Bishop;
+		if (promotionChar == 'n') return Piece::W_Knight;
+	}
+	else {
+		if (promotionChar == 'q') return Piece::B_Queen;
+		if (promotionChar == 'r') return Piece::B_Rook;
+		if (promotionChar == 'b') return Piece::B_Bishop;
+		if (promotionChar == 'n') return Piece::B_Knight;
+	}
+	return Piece::Empty;
 }

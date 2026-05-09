@@ -12,14 +12,14 @@ BoardRenderer::BoardRenderer() {
 void BoardRenderer::draw(sf::RenderWindow& window) {
 
 	//border
-	sf::RectangleShape border(sf::Vector2f(boardPixelSize + offset * 2, boardPixelSize + offset * 2));
+	sf::RectangleShape border(sf::Vector2f(BOARD_PIXEL_SIZE + OFFSET * 2, BOARD_PIXEL_SIZE + OFFSET * 2));
 	border.setPosition(0, 0);
 	border.setFillColor(sf::Color(45, 25, 20));
 	window.draw(border);
 	window.draw(borderSprite);
 
 	//outside border
-	sf::RectangleShape outSideBorder(sf::Vector2f(boardPixelSize + offset * 2, boardPixelSize + offset * 2));
+	sf::RectangleShape outSideBorder(sf::Vector2f(BOARD_PIXEL_SIZE + OFFSET * 2, BOARD_PIXEL_SIZE + OFFSET * 2));
 	outSideBorder.setFillColor(sf::Color::Transparent);
 	outSideBorder.setOutlineThickness(-8.f);
 	outSideBorder.setOutlineColor(sf::Color(28, 16, 13));
@@ -27,12 +27,12 @@ void BoardRenderer::draw(sf::RenderWindow& window) {
 	window.draw(outSideBorder);
 
 	//board
-	sf::RectangleShape square(sf::Vector2f(squareSize, squareSize));
+	sf::RectangleShape square(sf::Vector2f(SQUARE_SIZE, SQUARE_SIZE));
 
-	for (int i = 0; i < boardSize; i++) {
-		for (int j = 0; j < boardSize; j++) {
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		for (int j = 0; j < BOARD_SIZE; j++) {
 
-			square.setPosition(j * squareSize + offset, i * squareSize + offset);
+			square.setPosition(j * SQUARE_SIZE + OFFSET, i * SQUARE_SIZE + OFFSET);
 
 			if ((i + j) % 2 == 0) {
 				square.setFillColor(light);
@@ -50,9 +50,9 @@ void BoardRenderer::draw(sf::RenderWindow& window) {
 
 void BoardRenderer::drawHighlight(sf::RenderWindow& window,Position pos ,sf::Color Color) {
 
-	hightlightSquare.setSize(sf::Vector2f(squareSize, squareSize));
+	hightlightSquare.setSize(sf::Vector2f(SQUARE_SIZE, SQUARE_SIZE));
 
-	hightlightSquare.setPosition(pos.col * squareSize + offset, pos.row * squareSize + offset);
+	hightlightSquare.setPosition(pos.col * SQUARE_SIZE + OFFSET, pos.row * SQUARE_SIZE + OFFSET);
 
 	hightlightSquare.setFillColor(Color);
 
@@ -62,7 +62,7 @@ void BoardRenderer::drawHighlight(sf::RenderWindow& window,Position pos ,sf::Col
 void BoardRenderer::initBoardTexture(sf::Texture& texture) {
 
 	boardSprite.setTexture(texture);
-	boardSprite.setPosition(offset, offset);
+	boardSprite.setPosition(OFFSET, OFFSET);
 	
 	boardSprite.setColor(sf::Color(255, 255, 255, 15));
 	boardSprite.setScale(0.64f, 0.9711f);
@@ -126,10 +126,10 @@ void BoardRenderer::drawCoordinates(sf::RenderWindow& window) {
 		sf::FloatRect bNum = text.getLocalBounds();
 		text.setOrigin(bNum.left + bNum.width / 2.0f, bNum.top + bNum.height / 2.0f);
 
-		text.setPosition(offset / 2.0f, offset + i * squareSize + squareSize / 2.0f);
+		text.setPosition(OFFSET / 2.0f, OFFSET + i * SQUARE_SIZE + SQUARE_SIZE / 2.0f);
 		window.draw(text);
 
-		text.setPosition(offset + boardPixelSize + offset / 2.0f, offset + i * squareSize + squareSize / 2.0f);
+		text.setPosition(OFFSET + BOARD_PIXEL_SIZE + OFFSET / 2.0f, OFFSET + i * SQUARE_SIZE + SQUARE_SIZE / 2.0f);
 		window.draw(text);
 
 
@@ -139,10 +139,10 @@ void BoardRenderer::drawCoordinates(sf::RenderWindow& window) {
 		sf::FloatRect bChar = text.getLocalBounds();
 		text.setOrigin(bChar.left + bChar.width / 2.0f, bChar.top + bChar.height / 2.0f);
 
-		text.setPosition(offset + i * squareSize + squareSize / 2.0f, offset + boardPixelSize + offset / 2.0f);
+		text.setPosition(OFFSET + i * SQUARE_SIZE + SQUARE_SIZE / 2.0f, OFFSET + BOARD_PIXEL_SIZE + OFFSET / 2.0f);
 		window.draw(text);
 
-		text.setPosition(offset + i * squareSize + squareSize / 2.0f, offset / 2.0f);
+		text.setPosition(OFFSET + i * SQUARE_SIZE + SQUARE_SIZE / 2.0f, OFFSET / 2.0f);
 		window.draw(text);
 	}
 }
@@ -151,11 +151,11 @@ void BoardRenderer::drawHover(sf::RenderWindow& window, Position pos) {
 
 	if (pos.row < 0 || pos.row>7 || pos.col < 0 || pos.col>7)return;
 
-	sf::RectangleShape hoverSquare(sf::Vector2f(squareSize, squareSize));
+	sf::RectangleShape hoverSquare(sf::Vector2f(SQUARE_SIZE, SQUARE_SIZE));
 
 	hoverSquare.setFillColor(sf::Color(255, 255, 255, 50));
 
-	hoverSquare.setPosition(pos.col * squareSize + offset, pos.row * squareSize + offset);
+	hoverSquare.setPosition(pos.col * SQUARE_SIZE + OFFSET, pos.row * SQUARE_SIZE + OFFSET);
 
 	window.draw(hoverSquare);
 }
@@ -175,8 +175,8 @@ void BoardRenderer::drawKingCheckSquare(sf::RenderWindow& window, Position kingP
 
 void BoardRenderer::drawValidMove(sf::RenderWindow& window, Position pos,bool isEnemy) {
 
-	float centerX = pos.col * squareSize + offset + (squareSize / 2.0f);
-	float centerY = pos.row * squareSize + offset + (squareSize / 2.0f);
+	float centerX = pos.col * SQUARE_SIZE + OFFSET + (SQUARE_SIZE / 2.0f);
+	float centerY = pos.row * SQUARE_SIZE + OFFSET + (SQUARE_SIZE / 2.0f);
 
 	highlightDot.setPosition(centerX, centerY);
 	captureRing.setPosition(centerX, centerY);
@@ -211,9 +211,9 @@ void BoardRenderer::drawPromotionPanel(sf::RenderWindow& window, Color turn, int
 
 	int direction = (turn == Color::white) ? 1 : -1;
 
-	sf::RectangleShape promotionPanel(sf::Vector2f(squareSize, squareSize * 4));
+	sf::RectangleShape promotionPanel(sf::Vector2f(SQUARE_SIZE, SQUARE_SIZE * 4));
 	promotionPanel.setFillColor(sf::Color(255, 255, 255, 170));
-	promotionPanel.setPosition(offset + col * squareSize, offset + (turn == Color::white ? 0 : 4 * squareSize));
+	promotionPanel.setPosition(OFFSET + col * SQUARE_SIZE, OFFSET + (turn == Color::white ? 0 : 4 * SQUARE_SIZE));
 	promotionPanel.setOutlineThickness(2.f);
 	promotionPanel.setOutlineColor(sf::Color::Black);
 

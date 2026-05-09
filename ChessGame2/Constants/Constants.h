@@ -1,15 +1,15 @@
 ﻿#pragma once
 
-int const boardSize = 8;
+constexpr int BOARD_SIZE = 8;
 
-int const squareSize = 80;
+int const SQUARE_SIZE = 80;
 
-int const windowWidth = 900;
+int const WINDOW_WIDTH = 900;
 
-int const windowHeight = 800;
+int const WINDOW_HEIGHT = 800;
 
-int const offset = 30;
+int const OFFSET = 30;
 
-int const boardPixelSize = 640;
+int const BOARD_PIXEL_SIZE = 640;
 
 const std::string SOUND_PATH = "Assets/Sound/";

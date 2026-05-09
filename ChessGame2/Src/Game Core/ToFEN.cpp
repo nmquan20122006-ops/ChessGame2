@@ -97,10 +97,10 @@ std::string ToFEN::enPassantToFEN(const Move& move) {
 std::string ToFEN::BoardToFEN(const Board& board) {
 
 	std::string fen;
-	for (int row = 0; row < boardSize; ++row) {
+	for (int row = 0; row < BOARD_SIZE; ++row) {
 
 		int emptyCount = 0;
-		for (int col = 0; col < boardSize; ++col) {
+		for (int col = 0; col < BOARD_SIZE; ++col) {
 
 			Piece p = board.getPiece({ row,col });
 			if (p == Piece::Empty) {
@@ -118,7 +118,7 @@ std::string ToFEN::BoardToFEN(const Board& board) {
 		if (emptyCount > 0) {
 			fen += std::to_string(emptyCount);
 		}
-		if (row < boardSize-1) {
+		if (row < BOARD_SIZE-1) {
 			fen += "/";
 		}
 
