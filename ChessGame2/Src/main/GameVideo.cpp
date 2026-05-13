@@ -6,6 +6,7 @@ GameVideo::GameVideo() :
 	window				(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Chess"),
 	gui					(window),
 	analysisPanel		(gui),
+	evalBar				(gui),
 	textureManager		(),
 	board				(std::make_shared<Board>()),
 	state				(std::make_shared<GameState>()),
@@ -17,7 +18,6 @@ GameVideo::GameVideo() :
 	chessNotation		(),
 	moveLog				(std::make_shared<MoveLog>(board, state, chessNotation, moveService))
 	{
-
 	moveExecutor =		std::make_unique<MoveExecutor>(board,state,*moveLog);
 	inputHandler =		std::make_unique<InputHandler>(board, state, moveService);
 	gameControl =		std::make_unique<GameControl>(board, state, moveService, moveExecutor,*moveLog);
@@ -46,6 +46,8 @@ void GameVideo::initAll(){
 	gameControl->initChessEngine(config);
 
 	informationPanel.setFont("Assets/font1.ttf");
+
+	evalBar.updateLayout(0.7f, uiManager.getBoardView(), WINDOW_WIDTH,WINDOW_HEIGHT);
 }
 
 void GameVideo::callBackAll() {
@@ -109,17 +111,19 @@ void GameVideo::renderWindow(sf::RenderWindow& window,float dt) {
 
 	renderHighlightLastMove(window);
 
-	renderHintPosition(window);
-
 	renderCheckSquare(window);
 
 	renderHightlight(window);
 
+	renderHighlightValidMove(window);
+
 	pieceRender.renderAll(window,*board);
 
-	renderPromotionPanel(window);
+	renderHintPosition(window);
 
-	renderHighlightValidMove(window);
+	renderEnemyBestMovePosition(window);
+
+	renderPromotionPanel(window);
 
 	animator.render(window);
 
@@ -175,7 +179,7 @@ void GameVideo::updateCapturedPieceList() {
 
 void GameVideo::renderHintPosition(sf::RenderWindow& window) {
 
-	boardRenderer.drawHintLine(window, state->getHintPosition().from, state->getHintPosition().to);
+	boardRenderer.drawHintLine(window, state->getHintPosition().from, state->getHintPosition().to, sf::Color(255, 255, 0, 120));
 
 }
 
@@ -184,6 +188,11 @@ void GameVideo::renderHighlightLastMove(sf::RenderWindow& window) {
 	LastMove lastMove = board->getLastMove();
 
 	boardRenderer.drawHighlightLastMove(window, lastMove.from, lastMove.to);
+}
+
+void GameVideo::renderEnemyBestMovePosition(sf::RenderWindow& window) {
+
+	boardRenderer.drawHintLine(window, state->getEnemyBestMovePosition().from, state->getEnemyBestMovePosition().to, sf::Color(180, 20, 20, 180));
 }
 
 void GameVideo::renderBoardHover(sf::RenderWindow& window) {
@@ -252,6 +261,8 @@ void GameVideo::gameLoop(float dt) {
 	
 	gameControl->updateChessEngineMove();
 
+	evalBar.updateEval(state->getEngineEvaluation());
+
 	audio.update();
 
 	EventBus::get().dispatch();
@@ -270,6 +281,8 @@ void GameVideo::updateEvent(sf::Event e) {
 	if (e.type == sf::Event::Resized) {
 
 		uiManager.onResize(e.size.width, e.size.height);
+
+		evalBar.updateLayout(0.7f, uiManager.getBoardView(), e.size.width,e.size.height);
 
 		analysisPanel.updateLayout(uiManager.getBoardRightEdgeRatio());
 

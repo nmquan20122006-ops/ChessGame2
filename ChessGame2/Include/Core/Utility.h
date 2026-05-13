@@ -4,6 +4,7 @@
 #include"Constants.h"
 #include"Piece.h"
 #include"State/Type.hpp"
+#include"State/Aistate.hpp"
 
 class GameState;
 struct Move;
@@ -101,4 +102,13 @@ inline Piece charToPiece(Color turn, char promotionChar) {
 		if (promotionChar == 'n') return Piece::B_Knight;
 	}
 	return Piece::Empty;
+}
+
+inline float EvalToRatio(const EngineEvaluation& Eval) {
+	if (Eval.isCheckMate) {
+		return Eval.checkMateIn > 0 ? 1.0f : 0.0f;
+	}
+	// Sigmoid — tự nhiên hơn linear
+	float x = Eval.score / 400.0f;
+	return 1.0f / (1.0f + std::exp(-x));
 }

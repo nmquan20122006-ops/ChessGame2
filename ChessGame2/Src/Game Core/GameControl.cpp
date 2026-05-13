@@ -2,13 +2,13 @@
 #include "Board.h"
 #include "MoveExecutor.h"
 #include "MoveService.h"
-#include "StockfishAI.h" 
+#include"ChessEngine/StockfishAI.h"
 #include "Bot.h"
 #include "ToFEN.h"
 #include "EventBus.h"
 #include "State/Move.hpp"
 #include "PromotionController.h"
-#include"ChessEngineController.h"
+#include"ChessEngine/ChessEngineController.h"
 
 GameControl::GameControl(
 	std::shared_ptr<Board> b,
@@ -16,7 +16,8 @@ GameControl::GameControl(
 	std::shared_ptr<MoveService>& ms,
 	std::unique_ptr<MoveExecutor>& me,
 	MoveLog& l) : 
-	m_moveLog(l) {
+	m_moveLog(l)
+{
 	m_board = b;
 	m_gameState = s;
 	m_moveService = ms;
@@ -27,6 +28,10 @@ GameControl::GameControl(
 	m_chessEngineController->setOnHintReady([this](Position from, Position to) {
 		m_gameState->setHintPosition(from, to);
 		});
+	m_chessEngineController->setOnEnemyBestMoveReady([this](Position from, Position to) {
+		m_gameState->setEnemyBestMovePosition(from, to);
+	});
+
 	executeEngineMove();
 
 	subscribeToMove([this](const Move& move) {
@@ -85,8 +90,9 @@ void GameControl::finalizeMove(Move& move) {
 	updateGameState();
 
 	m_gameState->setCurrentFEN(ToFEN::FullFEN(*m_board, move, *m_gameState));
-	m_moveLog.record(move);
+	m_gameState->setOppositeFEN(ToFEN::enemyFullFEN(*m_board, move, *m_gameState));
 
+	m_moveLog.record(move);
 	EventBus::get().publish(GameEvent::MoveRecord);
 
 	notifyMoveExecuted(move);
@@ -149,6 +155,7 @@ void GameControl::executeEngineMove() {
 					m_moveExecutor->applyMove(move);
 					finalizeMove(move);
 					publishMoveEvent(move);
+					m_gameState->setEngineEvaluation() = m_chessEngineController->getEngineEvaluation();
 					m_gameState->setAnimating(false);
 				});
 		}
@@ -156,6 +163,7 @@ void GameControl::executeEngineMove() {
 			m_moveExecutor->applyMove(move);
 			finalizeMove(move);
 			publishMoveEvent(move);
+			m_gameState->setEngineEvaluation() = m_chessEngineController->getEngineEvaluation();
 		}
 		});
 }
@@ -164,11 +172,16 @@ void GameControl::executeHint() {
 	m_chessEngineController->requestHint();
 }
 
+void GameControl::executeEnemyBestMove() {
+	m_chessEngineController->requestEnemyBestMove();
+}
+
 void GameControl::updateGameState() {
 
 	m_gameState->switchTurn();
 
 	m_gameState->clearHintPosition();
+	m_gameState->clearEnemyBestMovePosition();
 
 	const auto& Turn = m_gameState->getCurrentTurn();
 
@@ -194,6 +207,8 @@ void GameControl::syncAfterUndo(UndoEntry undoEntry) {
 	m_moveLog.syncGame(undoEntry);
 	m_chessEngineController->syncPosition(m_gameState->getCurrentFEN());
 
+	m_gameState->clearEnemyBestMovePosition();
+	m_gameState->clearHintPosition();
 }
 
 bool GameControl::executeUndoMove() {

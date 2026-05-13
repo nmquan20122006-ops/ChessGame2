@@ -207,7 +207,7 @@ void BoardRenderer::drawCursor(sf::RenderWindow& window,sf::Vector2f worldPos) {
 	window.draw(cursorSprite);
 }
 
-void BoardRenderer::drawHintLine(sf::RenderWindow& window, Position from, Position to) {
+void BoardRenderer::drawHintLine(sf::RenderWindow& window, Position from, Position to, sf::Color color) {
 	if (from == to) return;
 
 	float thickness = 15.0f;
@@ -230,11 +230,10 @@ void BoardRenderer::drawHintLine(sf::RenderWindow& window, Position from, Positi
 	sf::Vector2f dir = direction / length;
 	sf::Vector2f perp(-dir.y, dir.x);
 
-	// 1. Vẽ Thân Đường Thẳng (Lùi lại để không đè lên mũi tên)
 	sf::VertexArray lineBody(sf::TriangleStrip, 4);
 	sf::Vector2f halfThick = perp * (thickness / 2.0f);
 	sf::Vector2f lineEndPos = toPos - dir * arrowHeadSize;
-	sf::Color lineColor(255, 255, 0, 70);
+	sf::Color lineColor(color);
 
 	lineBody[0].position = fromPos + halfThick;
 	lineBody[1].position = fromPos - halfThick;
@@ -244,13 +243,12 @@ void BoardRenderer::drawHintLine(sf::RenderWindow& window, Position from, Positi
 	for (int i = 0; i < 4; i++) lineBody[i].color = lineColor;
 	window.draw(lineBody);
 
-	// 2. Vẽ Mũi Tên
 	sf::ConvexShape arrow;
 	arrow.setPointCount(3);
 	arrow.setPoint(0, toPos);
 	arrow.setPoint(1, lineEndPos + perp * arrowHeadSize);
 	arrow.setPoint(2, lineEndPos - perp * arrowHeadSize);
-	arrow.setFillColor(sf::Color(255, 255, 0, 70));
+	arrow.setFillColor(color);
 
 	window.draw(arrow);
 }

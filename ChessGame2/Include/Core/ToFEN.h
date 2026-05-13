@@ -30,5 +30,7 @@ public:
 
 	static std::string FullFEN(const Board& board, const Move& move,const GameState& gameState);
 
+	static std::string enemyFullFEN(const Board& board, const Move& move, const GameState& gameState);
+
 	static Piece charToPiece(Color turn, char promotionChar);
 };

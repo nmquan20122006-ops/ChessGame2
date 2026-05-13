@@ -143,7 +143,25 @@ std::string ToFEN::FullFEN(const Board& board, const Move& move, const GameState
 	fullFEN += " ";
 	fullFEN += std::to_string(gameState.getFullMoveNumberCount());
 
+	return fullFEN;
+}
 
+std::string ToFEN::enemyFullFEN(const Board& board, const Move& move, const GameState& gameState) {
+
+	std::string fullFEN = "";
+
+	fullFEN += BoardToFEN(board);
+	fullFEN += " ";
+	fullFEN += TurnToChar(gameState.getOppositeTurn());
+	fullFEN += " ";
+	fullFEN += castleToFEN(board);
+	fullFEN += " ";
+	fullFEN += enPassantToFEN(move);
+	fullFEN += " ";
+	fullFEN += std::to_string(gameState.getHalfMoveClockCount());
+	fullFEN += " ";
+	fullFEN += std::to_string(gameState.getFullMoveNumberCount());
 
 	return fullFEN;
 }
+

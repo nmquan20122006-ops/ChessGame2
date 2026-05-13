@@ -1,14 +1,15 @@
-﻿/**
-* 
-*/
+﻿
 #include <iostream>
 #include <sstream>
 #include <cstring>
+#include <vector>
 
-#include "StockfishEngine.h"
+#include"ChessEngine/StockfishEngine.h"
+#include"Constants.h"
 
-StockfishEngine::StockfishEngine() : hStdinWrite(NULL), hStdoutRead(NULL) {
-    ZeroMemory(&pi, sizeof(pi));
+StockfishEngine::StockfishEngine() : _m_hStdinWrite(NULL), _m_hStdoutRead(NULL), _m_pi{} {
+
+    ZeroMemory(&_m_pi, sizeof(_m_pi));
 }
 
 StockfishEngine::~StockfishEngine() {
@@ -16,14 +17,27 @@ StockfishEngine::~StockfishEngine() {
 }
 
 bool StockfishEngine::start(const std::wstring& stockfishPath) {
-   
-    HANDLE hStdinRead, hStdoutWrite;
+
+    //khởi tạo inRead cho engine ghi vào, tạo outWrite để engine ghi ra
+    HANDLE hStdinRead = NULL;
+    HANDLE hStdoutWrite = NULL;
+
+    //khởi tạo SECURITY_ATTRIBUTES với khả năng cho phép kế thừa
     SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
 
-    if (!CreatePipe(&hStdinRead, &hStdinWrite, &sa, 0)) return false;
+    //tạo 2 ống ẩn danh cho giao tiếp stdin và stdout cho tiến trình con
+    if (!CreatePipe(&hStdinRead, &_m_hStdinWrite, &sa, 0)) return false;
 
-    if (!CreatePipe(&hStdoutRead, &hStdoutWrite, &sa, 0)) return false;
+    if (!CreatePipe(&_m_hStdoutRead, &hStdoutWrite, &sa, 0)) {
 
+        CloseHandle(hStdinRead);
+        CloseHandle(_m_hStdinWrite);
+        _m_hStdinWrite = NULL;
+        return false;
+    }
+
+    //khởi tạo thông tin bắt đầu của tiến trình
+    //tiến trình con sẽ đọc stdin từ hStdinRead và mọi output của tiến trình con sẽ được ghi vào hStdoutWrite
     STARTUPINFOW si;
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
@@ -32,24 +46,30 @@ bool StockfishEngine::start(const std::wstring& stockfishPath) {
     si.hStdError = hStdoutWrite;
     si.dwFlags = STARTF_USESTDHANDLES;
 
+    //khởi tạo command line an toàn
     std::wstring cmd = stockfishPath;
-
     if (cmd.find(L' ') != std::wstring::npos) {
-        cmd = L"\"" + cmd + L"\""; 
+        cmd = L"\"" + cmd + L"\"";
     }
-
     wchar_t* cmdLine = const_cast<wchar_t*>(cmd.c_str());
 
-    if (!CreateProcessW(NULL, cmdLine, NULL, NULL, TRUE,
-        CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
-        CloseHandle(hStdinRead);
-        CloseHandle(hStdoutWrite);
-        return false;
-    }
+    //khởi tạo tiến trình chess engine
+    bool success = CreateProcessW(NULL, cmdLine, NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &si, &_m_pi);
 
+    //đóng các tiến trình mà cha không cần
     CloseHandle(hStdinRead);
     CloseHandle(hStdoutWrite);
 
+    //xử lý nếu không thành công
+    if (!success) {
+        CloseHandle(_m_hStdinWrite);
+        CloseHandle(_m_hStdoutRead);
+        _m_hStdinWrite = NULL;
+        _m_hStdoutRead = NULL;
+        return false;
+    }
+
+    //thử gửi lệnh xem hoạt động không:)
     sendCommand("uci");
     if (readResponse().find("uciok") == std::string::npos) return false;
 
@@ -62,51 +82,68 @@ bool StockfishEngine::start(const std::wstring& stockfishPath) {
 void StockfishEngine::stop() {
 
     if (isRunning()) {
+
         sendCommand("quit");
-        WaitForSingleObject(pi.hProcess, 5000);
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
+        DWORD wait = WaitForSingleObject(_m_pi.hProcess, PROCESS_TERMINATE_WAIT_MS);
+
+        if (wait != WAIT_OBJECT_0) {
+            TerminateProcess(_m_pi.hProcess, 1);
+        }
+
+        CloseHandle(_m_pi.hProcess);
+        CloseHandle(_m_pi.hThread);
+        _m_pi.hProcess = NULL;
+        _m_pi.hThread = NULL;
     }
 
-    if (hStdinWrite) CloseHandle(hStdinWrite);
-    if (hStdoutRead) CloseHandle(hStdoutRead);
+    if (_m_hStdinWrite) { CloseHandle(_m_hStdinWrite); _m_hStdinWrite = NULL; }
+    if (_m_hStdoutRead) { CloseHandle(_m_hStdoutRead); _m_hStdoutRead = NULL; }
 
-    hStdinWrite = NULL;
-    hStdoutRead = NULL;
-    moveHistory.clear();
+}
+
+void StockfishEngine::stopSearch() {
+
+    if (!isRunning()) {
+        std::cerr << "[stopSearch] Can't send. Chess engine terminated!" << std::endl;
+    }
+    sendCommand("stop");
 }
 
 bool StockfishEngine::isRunning() {
-    return hStdinWrite != NULL && hStdoutRead != NULL;
+    return _m_hStdinWrite != NULL && _m_hStdoutRead != NULL;
 }
 
 bool StockfishEngine::sendCommand(const std::string& cmd) {
-    if (!isRunning()) return false;
+
+    if (!isRunning()) {
+        std::cerr << "[sendCommand] Can't send. Chess engine terminated!" << std::endl;
+        return false;
+    }
     
-    std::cout << "Send to stockfish: " << cmd << std::endl;
+    std::cout << cmd << std::endl;
 
     std::string fullCmd = cmd + "\n";
     DWORD bytesWritten;
-    return WriteFile(hStdinWrite, fullCmd.c_str(), fullCmd.length(), &bytesWritten, NULL);
+    return WriteFile(_m_hStdinWrite, fullCmd.c_str(), fullCmd.length(), &bytesWritten, NULL);
 }
 
 std::string StockfishEngine::readResponse() {
+
     if (!isRunning()) return "";
 
     char buffer[4096];
     DWORD bytesRead;
     std::string response;
     DWORD startTime = GetTickCount64();
-    const DWORD timeout = 5000; // 5 giây timeout
 
-    while (GetTickCount64() - startTime < timeout) {
+    while (GetTickCount64() - startTime < PROCESS_TERMINATE_TIMEOUT_MS) {
         DWORD available = 0;
-        if (!PeekNamedPipe(hStdoutRead, NULL, 0, NULL, &available, NULL)) {
+        if (!PeekNamedPipe(_m_hStdoutRead, NULL, 0, NULL, &available, NULL)) {
             break;
         }
 
         if (available > 0) {
-            if (!ReadFile(hStdoutRead, buffer, sizeof(buffer) - 1, &bytesRead, NULL))
+            if (!ReadFile(_m_hStdoutRead, buffer, sizeof(buffer) - 1, &bytesRead, NULL))
                 break;
 
             if (bytesRead == 0) break;
@@ -129,7 +166,7 @@ std::string StockfishEngine::readResponse() {
 
 void StockfishEngine::setPosition(const std::string& fen) {
 
-    moveHistory.clear();
+    if (!isRunning()) { std::cerr << "[sendCommand] Can't send. Chess engine terminated!" << std::endl; return; }
 
     if (fen.empty()||fen == "startpos") {
         sendCommand("position startpos");
@@ -140,18 +177,13 @@ void StockfishEngine::setPosition(const std::string& fen) {
 
 }
 
-void StockfishEngine::makeMove(const std::string& currentFen) {
-
-    if (!isRunning())return;
-
-    sendCommand("position fen " + currentFen );
-}
-
-std::string StockfishEngine::getBestMove(int movetime) {
+std::string StockfishEngine::getBestMoveByTime(int movetime) {
     if (!isRunning()) return "";
 
     sendCommand("go movetime " + std::to_string(movetime));
     std::string response = readResponse();
+
+    praseEval(response);
 
     size_t pos = response.find("bestmove");
     if (pos == std::string::npos) return "";
@@ -164,7 +196,7 @@ std::string StockfishEngine::getBestMove(int movetime) {
     return bestMove;
 }
 
-std::string StockfishEngine::getBestMoveByDepth(int depth) {
+std::string StockfishEngine::getBestMoveByTimeByDepth(int depth) {
     if (!isRunning())return"";
 
     sendCommand("go depth " + std::to_string(depth));
@@ -181,25 +213,26 @@ std::string StockfishEngine::getBestMoveByDepth(int depth) {
     return bestmove;
 }
 
+void StockfishEngine::praseEval(const std::string& response) {
 
-std::string StockfishEngine::toUCI(int row, int col) {
+    size_t scorePos = response.rfind("score");
+    if (scorePos == std::string::npos)return;
 
-    char file = 'a' + col;    
-    char rank = '8' - row;     
+    std::stringstream ss(response.substr(scorePos));
+    std::string token;
+    
+    ss >> token;//score;
+    ss >> token;//mate or cp
 
-    return std::string(1, file) + rank;
-}
-
-void StockfishEngine::fromUCI(const std::string& uci, int& row, int& col) {
-
-    if (uci.length() < 2) {
-        row = col = -1; 
-        return;
+    if (token == "cp") {
+        ss >> _m_engineEvaluation.score;
+        _m_engineEvaluation.isCheckMate = false;
     }
-
-    col = uci[0] - 'a';  
-    row = '8' - uci[1];   
-
+    else if (token == "mate") {
+        ss >> _m_engineEvaluation.checkMateIn;
+        _m_engineEvaluation.isCheckMate = true;
+        _m_engineEvaluation.score = _m_engineEvaluation.checkMateIn > 0 ? 10000 : -10000;
+    }
 }
 
 void StockfishEngine::setSkillLevel(int lv) {

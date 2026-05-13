@@ -26,6 +26,7 @@ class GameState {
 public:
 	const DragState&		getDragState()				const { return m_drag; }
 	const EngineConfig&		getEngineConfig()			const { return m_engineConfig; }
+	const EngineEvaluation& getEngineEvaluation()		const { return m_engineEvaluation; }
 	const GameMode&			getGameMode()				const { return m_currentMode; }
 	const GameStatus&		getGameStatus()				const { return m_gameStatus; }
 	const bool&				getDualMode()				const { return m_isDualMode; }
@@ -34,6 +35,7 @@ public:
 	const Position&			getPendingTo()				const { return m_pendingTo; }
 	const Position&			getPendingFrom()			const { return m_pendingFrom; }
 	const Color				getCurrentTurn()			const { return m_currentTurn; }
+	const Color				getOppositeTurn()			const { return m_currentTurn == Color::white ? Color::black : Color::white; }
 	const Color				getColor(Piece p)			const { if ((int)p >= 1 && (int)p <= 6)return Color::white; return Color::black; }
 	const auto&				getValidMoves()				const { return m_validMoves; }
 	const Position			getSelectPos()				const { return m_selectedPos; }
@@ -42,11 +44,14 @@ public:
 	const bool 				getIsSelected()				const { return m_isSelected; }
 	const bool 				getIsCheckMate()			const { return m_isCheckMate; }
 	const std::string&		getCurrentFEN()				const { return m_currentFEN; }
+	const std::string&		getOppositeFEN()			const { return m_oppositeFEN; }
 	const auto&				getAnimating()				const { return m_isAnimating; }
-	const HintPosition& getHintPosition()				const { return m_hintPosition; }
+	const HintPosition&		getHintPosition()			const { return m_hintPosition; }
+	const auto&				getEnemyBestMovePosition()	const { return m_enemyBestMovePosition; }
 
 	EngineConfig&			setEngineConfig()					{ return m_engineConfig; }
 	DragState&				setDragState()						{ return m_drag; }
+	EngineEvaluation&		setEngineEvaluation()				{ return m_engineEvaluation; }
 	void					setGameMode(GameMode m)				{ m_currentMode = m; }
 	void					setGameStatus(GameStatus state)		{ m_gameStatus = state; }
 	void					setDualMode(bool a)					{ m_isDualMode = a; }
@@ -62,15 +67,18 @@ public:
 	void					setCheckPos(Position pos)			{ m_checkPos = pos; }
 	void					setCurrentTurn(Color turn)			{ m_currentTurn = turn; }
 	void					setCurrentFEN(std::string fen)		{ m_currentFEN = fen; }
+	void					setOppositeFEN(std::string fen)		{ m_oppositeFEN = fen; }
 	void					setPendingFrom(Position pos)		{ m_pendingFrom = pos; }
 	void					setPendingTo(Position pos)			{ m_pendingTo = pos; }
 	void					setHintPosition(Position from, Position to) { m_hintPosition.from = from; m_hintPosition.to = to; }
+	void					setEnemyBestMovePosition(Position from, Position to) { m_enemyBestMovePosition.from = from; m_enemyBestMovePosition.to = to; }
 	void					clearSelection() {
 		m_selectedPos = { -1,-1 };
 		m_isSelected = false;
 		m_validMoves.clear();
 	}
 	void					clearHintPosition() { m_hintPosition.from = { -1,-1 }; m_hintPosition.to = { -1,-1 }; }
+	void					clearEnemyBestMovePosition() { m_enemyBestMovePosition.from = { -1,-1 }; m_enemyBestMovePosition.to = { -1,-1 }; }
 	bool					isPosInVector(Position pos) const {
 		for (const auto& position : m_validMoves) {
 			if (position == pos) {
@@ -92,7 +100,6 @@ public:
 		m_isDualMode = false;
 
 	}
-
 private:
 	Color					m_currentTurn = Color::white;
 	GameStatus				m_gameStatus = GameStatus::Normal;
@@ -109,8 +116,12 @@ private:
 	std::vector<Position>	m_validMoves;
 	DragState				m_drag;
 	EngineConfig			m_engineConfig;
+	EngineEvaluation		m_engineEvaluation;
 	HintPosition			m_hintPosition;
+	EnemyBestMovePosition	m_enemyBestMovePosition;
 	int						m_halfMoveClockCount = 0;
 	int						m_fullMoveNumberCount = 1;
 	std::string				m_currentFEN;
+	std::string				m_oppositeFEN;
+
 };

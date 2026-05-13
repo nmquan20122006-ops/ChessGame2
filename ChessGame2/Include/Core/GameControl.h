@@ -27,13 +27,11 @@ class PromotionController;
 class ChessEngineController;
 struct EngineConfig;
 
-
 class GameControl {
 public:
     using MoveEventCallback                 = std::function<void(const Move& move)>;
     using StateChangeCallback               = std::function<void(GameStatus newState)>;
     using AnimRequest                       = std::function<void(Position, Position, Piece, std::function<void()>)>;
-
 private:
     std::shared_ptr<Board>                  m_board;
     std::unique_ptr<MoveExecutor>           m_moveExecutor;
@@ -50,8 +48,6 @@ private:
     void                                    updateGameState();
     void                                    notifyMoveExecuted(const Move& move);
     void                                    notifyStateChanged(const GameStatus& newState);
-
-
 public:
     GameControl(std::shared_ptr<Board> b,
         std::shared_ptr<GameState> s,
@@ -73,6 +69,7 @@ public:
     void                                    updateChessEngineMove();
     void                                    executeEngineMove();
     void                                    executeHint();
+    void                                    executeEnemyBestMove();
     void                                    resetGame();
     bool                                    isBlocking() const ;
     GameState&                              getState() { return *m_gameState; }

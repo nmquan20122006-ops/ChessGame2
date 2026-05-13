@@ -19,37 +19,41 @@
 #include <atomic>
 #include <mutex>
 #include <memory>
+#include <functional>
 
 #include "ChessEngineInterface.h"
-#include "StockfishEngine.h"
+#include "ChessEngine/StockfishEngine.h"
 #include "MoveExecutor.h"
+#include "State/Aistate.hpp"
 
 class StockfishGame :public IChessEngine {
-
 private:
-    StockfishEngine                 engine;
-    bool                            m_isPlayerWhite;
-    std::atomic<bool>               m_gameOver;
-    std::thread                     engineThread;
-    std::mutex                      m_mutex;
-    std::atomic<bool>               m_isThinking;
-    std::atomic<bool>               m_stopThinking;
-    std::string                     pendingEngineMove;
+    StockfishEngine                 _m_chessEngine;
+    bool                            _m_isPlayerWhite;
+    bool                            _m_isChessEngineReady;
+    std::atomic<bool>               _m_gameOver;
+    std::thread                     _m_chessEngineThread;
+    std::mutex                      _m_mutex;
+    std::atomic<bool>               _m_isThinking;
+    std::atomic<bool>               _m_stopThinking;
+    std::string                     _m_pendingEngineMove;
 
+    void                            _runEngineTask(std::function<std::string()>task);
 public:
     explicit StockfishGame();
     ~StockfishGame();
-
     bool                            init(const std::wstring& stockfishPath)override;
     void                            setDifficulty(int level)override;
     void                            newGame(bool playerIsWhite = true)override;
     void                            reset()override;
-    void                            startThinking(int thinkingTimeMs)override;
+    void                            goMoveTime(int thinkingTimeMs)override;
     void                            stopThinking()override;
-    bool                            isThinking() const override { return m_isThinking.load(); }
+    bool                            isThinking() const override { return _m_isThinking.load(); }
     std::string                     getPendingMove() override;
     void                            goDepth(int depth) override;
+    void                            stopSearch()override;
     void                            syncPosition(const std::string& move)override;
-    bool                            isGameOver() const override { return m_gameOver.load(); }
+    bool                            isGameOver() const override { return _m_gameOver.load(); }
+    EngineEvaluation                getEngineEvaluation()const override { return _m_chessEngine.getEngineEvaluation(); }
 };
 #endif

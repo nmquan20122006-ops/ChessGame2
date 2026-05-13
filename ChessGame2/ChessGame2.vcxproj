@@ -143,6 +143,7 @@
     <ClCompile Include="Src\Input\InputHandler.cpp" />
     <ClCompile Include="Src\UI\AnalysisPanel.cpp" />
     <ClCompile Include="Src\UI\Animation.cpp" />
+    <ClCompile Include="Src\UI\EvaluationBar.cpp" />
     <ClCompile Include="Src\UI\InformationPanel.cpp" />
     <ClCompile Include="Src\UI\UIManager.cpp" />
     <ClCompile Include="Src\Input\InputController.cpp" />
@@ -160,10 +161,10 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Downloads\tweeny-master\tweeny-master\include_tweeny\tweeny.h" />
     <ClInclude Include="Constants\Constants.h" />
-    <ClInclude Include="Include\Core\ChessEngineController.h" />
+    <ClInclude Include="Include\Core\ChessEngine\ChessEngineController.h" />
     <ClInclude Include="Include\Core\AllMoveValid.h" />
     <ClInclude Include="Include\Core\Bot.h" />
-    <ClInclude Include="Include\Core\ChessEngineInterface.h" />
+    <ClInclude Include="Include\Core\ChessEngine\ChessEngineInterface.h" />
     <ClInclude Include="Include\Core\EventBus.h" />
     <ClInclude Include="Include\Core\InputHandler.h" />
     <ClInclude Include="Include\Core\MoveLog.h" />
@@ -174,6 +175,7 @@
     <ClInclude Include="Include\Core\State\Type.hpp" />
     <ClInclude Include="Include\Core\State\UiState.hpp" />
     <ClInclude Include="Include\Core\ToFEN.h" />
+    <ClInclude Include="Include\UI\EvaluationBar.h" />
     <ClInclude Include="Include\UI\PromotionController.h" />
     <ClInclude Include="Include\UI\AnalysisPanel.h" />
     <ClInclude Include="Include\UI\Animation.h" />
@@ -192,8 +194,8 @@
     <ClInclude Include="Include\Core\MoveValidator.h" />
     <ClInclude Include="Include\Core\Piece.h" />
     <ClInclude Include="Include\UI\PieceRenderer.h" />
-    <ClInclude Include="Include\Core\StockfishEngine.h" />
-    <ClInclude Include="Include\Core\StockfishAI.h" />
+    <ClInclude Include="Include\Core\ChessEngine\StockfishEngine.h" />
+    <ClInclude Include="Include\Core\ChessEngine\StockfishAI.h" />
     <ClInclude Include="Include\UI\TextureManager.h" />
     <ClInclude Include="Include\Core\UIManager.h" />
     <ClInclude Include="Include\Core\Utility.h" />

@@ -26,3 +26,8 @@ struct HintPosition {
 	Position from;
 	Position to;
 };
+
+struct EnemyBestMovePosition {
+	Position from;
+	Position to;
+};

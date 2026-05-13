@@ -16,6 +16,7 @@ struct UndoEntry {
 	Move						moveBefore;
 	Color						turnBefore = Color::none;
 	std::string					fenBefore;
+	std::string					oppositeFenBefore;
 	int							halfMoveClockCountBefore = 0;
 	int							fullMoveNumberCountBefore = 1;
 	Position					checkPosBefore = { -1, -1 };
@@ -26,6 +27,7 @@ struct MoveRecord {
 
 	Move		move;
 	std::string fen;
+	std::string	oppositeFen;
 	std::string san;
 	Color		turn;
 	int			moveNumber;

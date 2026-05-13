@@ -10,13 +10,14 @@
 #include"GameAudio.h"
 #include"GameControl.h"
 #include"Animation.h"
-#include"StockfishAI.h"
+#include"ChessEngine/StockfishAI.h"
 #include"UIManager.h"
 #include"AnalysisPanel.h"
 #include"InformationPanel.h"
 #include"InputHandler.h"
 #include"MoveLog.h"
 #include"NotationService.h"
+#include"EvaluationBar.h"
 
 class GameVideo {
 
@@ -38,6 +39,7 @@ private:
 
 	BoardRenderer						boardRenderer;
 	PieceRenderer						pieceRender;
+
 	std::shared_ptr<InputController>	inputController;
 
 	sf::RenderWindow					window;
@@ -46,6 +48,7 @@ private:
 	sf::Clock							clock;
 
 	UIManager							uiManager;
+	EvalBar								evalBar;
 	AnalysisPanel						analysisPanel;
 	InformationPanel					informationPanel;
 	
@@ -74,6 +77,8 @@ public:
 	void renderPromotionPanel(sf::RenderWindow& window);
 	
 	void renderHintPosition(sf::RenderWindow& window);
+
+	void renderEnemyBestMovePosition(sf::RenderWindow& window);
 
 	void changeCursor(sf::RenderWindow& window);
 

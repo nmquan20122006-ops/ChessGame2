@@ -61,7 +61,5 @@ public:
 
 	void initFont(sf::Font& font);
 
-	void drawHintLine(sf::RenderWindow& window, Position from, Position to);
-
-	void drawArrow(sf::RenderWindow& window,sf::Vector2f from,sf::Vector2f to);
+	void drawHintLine(sf::RenderWindow& window, Position from, Position to, sf::Color color);
 };

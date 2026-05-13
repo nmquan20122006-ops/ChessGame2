@@ -102,6 +102,9 @@
     <ClCompile Include="Src\Game Core\ChessEngineController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\UI\EvaluationBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Core\Piece.h">
@@ -164,10 +167,10 @@
     <ClInclude Include="Include\UI\Bot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Core\StockfishEngine.h">
+    <ClInclude Include="Include\Core\ChessEngine\StockfishEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Core\StockfishAI.h">
+    <ClInclude Include="Include\Core\ChessEngine\StockfishAI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Core\UIManager.h">
@@ -188,7 +191,7 @@
     <ClInclude Include="Include\Core\Bot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Core\ChessEngineInterface.h">
+    <ClInclude Include="Include\Core\ChessEngine\ChessEngineInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Core\InputHandler.h">
@@ -224,7 +227,10 @@
     <ClInclude Include="Include\UI\PromotionController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Core\ChessEngineController.h">
+    <ClInclude Include="Include\Core\ChessEngine\ChessEngineController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\UI\EvaluationBar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

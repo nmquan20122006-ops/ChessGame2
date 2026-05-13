@@ -16,6 +16,7 @@ void MoveLog::savePrevBoard(Move& prevMove) {
     undoEntry.moveBefore = prevMove;
     undoEntry.turnBefore = gameState->getCurrentTurn();
     undoEntry.fenBefore = gameState->getCurrentFEN();
+    undoEntry.oppositeFenBefore = gameState->getOppositeFEN();
     undoEntry.halfMoveClockCountBefore = gameState->getHalfMoveClockCount();
     undoEntry.fullMoveNumberCountBefore = gameState->getFullMoveNumberCount();
     undoEntry.checkPosBefore = gameState->getCheckPos();
@@ -29,6 +30,7 @@ void MoveLog::syncGame(UndoEntry& undoEntry) {
     *this->board = *undoEntry.boardBefore;
     gameState->setCurrentTurn(undoEntry.turnBefore);
     gameState->setCurrentFEN(undoEntry.fenBefore);
+    gameState->setOppositeFEN(undoEntry.oppositeFenBefore);
     gameState->setHalfMoveClockCount(undoEntry.halfMoveClockCountBefore);
     gameState->setFullMoveNumberCount(undoEntry.fullMoveNumberCountBefore);
     gameState->setCheckPos(undoEntry.checkPosBefore);
@@ -45,6 +47,7 @@ void MoveLog::record(Move& move) {
     record.san = chessNotation.fullSAN(move, gameState, board, moveService);
     record.fen = gameState->getCurrentFEN();
     record.turn = gameState->getCurrentTurn();
+    record.oppositeFen = gameState->getOppositeFEN();
     record.moveNumber = (moveHistoryStack.size() / 2) + 1;
 
     moveHistoryStack.push_back(record);

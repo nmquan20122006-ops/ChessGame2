@@ -21,13 +21,19 @@ void AnalysisPanel::updateLayout(float boardRightEdgeRatio) {
     }
     panel->setVisible(true);
 
-    int margin = 15;
-    
-    std::string posX = std::to_string(boardRightEdgeRatio * 100.f) + "% + " + std::to_string(margin);
+    int margin = 15;      // Lề trên, dưới, phải
+    int gapWithEval = 12; // Khoảng cách giữa Panel và thanh Eval Bar
+
+    // 1. posX: Dịch điểm bắt đầu sang phải một khoảng bằng margin + gapWithEval
+    std::string posX = std::to_string(boardRightEdgeRatio * 100.f)
+        + "% + " + std::to_string(margin + gapWithEval);
 
     std::string posY = std::to_string(margin);
 
-    std::string width = std::to_string((1.0f - boardRightEdgeRatio) * 100.f) + "% - " + std::to_string(margin * 2);
+    // 2. width: Phải trừ đi tổng các khoảng trống để không bị tràn lề phải
+    // (margin lề trái của panel + margin lề phải của panel + gapWithEval)
+    std::string width = std::to_string((1.0f - boardRightEdgeRatio) * 100.f)
+        + "% - " + std::to_string(margin * 2 + gapWithEval);
 
     std::string height = "100% - " + std::to_string(margin * 2);
 
